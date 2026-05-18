@@ -17,16 +17,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const formData = await req.formData()
-    const file = formData.get("image") as File
+    const body = await req.json()
+    const description =
+      typeof body?.description === "string" ? body.description.trim() : ""
 
-    if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 })
+    if (!description) {
+      return NextResponse.json(
+        { error: "Meal description is required" },
+        { status: 400 }
+      )
     }
-
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const base64 = buffer.toString("base64")
 
     const model = getGeminiModel()
     if (!model) {
@@ -37,19 +37,17 @@ export async function POST(req: NextRequest) {
     }
 
     const prompt = `
-    Identify the foods shown in this image.
-    
-     You are an expert nutritionist. Analyze this food image and estimate its macronutrients.
-      - Identify the visible food items and portion sizes.
-      - Estimate macros conservatively (slightly overestimate calories if unsure).
-      - Do not hallucinate exact precision. Round to nearest 5 or 10.
-      - Ensure the response perfectly matches the requested JSON schema.
+    You are an expert nutritionist. Given a meal or food description, estimate its macronutrients for a typical serving.
+
+    Meal description: "${description}"
 
     Rules:
-    - Do NOT list ingredients
-    - Do NOT describe components
-    - Do NOT include adjectives like "no added sugar"
-    
+    - Break the description into distinct food items in the "foods" array.
+    - Estimate macros conservatively (slightly overestimate calories if unsure).
+    - Do not hallucinate exact precision. Round to nearest 5 or 10.
+    - Do NOT list ingredients or cooking methods as separate items unless they are separate foods.
+    - Ensure the response perfectly matches the requested JSON schema.
+
     Return ONLY valid JSON:
     {
       "foods": string[],
@@ -62,16 +60,7 @@ export async function POST(req: NextRequest) {
     }
     `
 
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: base64,
-          mimeType: file.type,
-        },
-      },
-    ])
-
+    const result = await model.generateContent(prompt)
     const parsed = parseAnalyzeResult(parseGeminiJson(result.response.text()))
 
     if (!parsed) {
@@ -85,7 +74,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const { message, status } = geminiErrorResponse(
       err,
-      "Failed to analyze image"
+      "Failed to analyze meal"
     )
     return NextResponse.json({ error: message }, { status })
   }

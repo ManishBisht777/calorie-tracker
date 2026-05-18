@@ -33,7 +33,7 @@ type ConfirmMealDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   data: AnalyzeResult
-  imageSrc: string
+  imageSrc?: string
   mealDate: string
   onMealDateChange: (date: string) => void
   onSave: () => void
@@ -70,7 +70,7 @@ export function ConfirmMealDialog({
         </DialogHeader>
 
         <div className="space-y-5 px-6 py-5">
-          <MealPreview src={imageSrc} alt="Meal to confirm" />
+          {imageSrc && <MealPreview src={imageSrc} alt="Meal to confirm" />}
 
           <div className="space-y-2">
             <Label htmlFor="meal-date">Log for</Label>
