@@ -2,7 +2,7 @@
 
 import Script from "next/script"
 
-const ONEKO_SPRITE = "/oneko/lucy.png"
+const ONEKO_SPRITE = "/oneko/bunny.png"
 
 export function Oneko() {
   return (

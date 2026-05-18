@@ -30,13 +30,16 @@ export async function POST(req: NextRequest) {
     const prompt = `
     Identify the foods shown in this image.
     
+     You are an expert nutritionist. Analyze this food image and estimate its macronutrients.
+      - Identify the visible food items and portion sizes.
+      - Estimate macros conservatively (slightly overestimate calories if unsure).
+      - Do not hallucinate exact precision. Round to nearest 5 or 10.
+      - Ensure the response perfectly matches the requested JSON schema.
+
     Rules:
     - Do NOT list ingredients
     - Do NOT describe components
     - Do NOT include adjectives like "no added sugar"
-    - Keep it generic (e.g., "protein bar", "chocolate cake")
-    
-    Then estimate nutrition.
     
     Return ONLY valid JSON:
     {

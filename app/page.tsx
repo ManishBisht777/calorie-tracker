@@ -1,29 +1,15 @@
 "use client"
 
+import { ConfirmMealDialog } from "@/components/confirm-meal-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
+import {
+  type AnalyzeResult,
+  formatMealDateLabel,
+  NUTRIENT_LABELS,
+  toLocalDateString,
+} from "@/lib/meal"
 import { useEffect, useMemo, useState } from "react"
-
-type Nutrients = {
-  calories: number
-  protein: number
-  carbs: number
-  fat: number
-}
-
-type AnalyzeResult = {
-  foods: string[]
-  nutrients: Nutrients
-}
-
-const NUTRIENT_LABELS: { key: keyof Nutrients; label: string; unit: string }[] =
-  [
-    { key: "calories", label: "Calories", unit: "kcal" },
-    { key: "protein", label: "Protein", unit: "g" },
-    { key: "carbs", label: "Carbs", unit: "g" },
-    { key: "fat", label: "Fat", unit: "g" },
-  ]
 
 function ImagePreview({ src, alt }: { src: string; alt: string }) {
   return (
@@ -59,71 +45,47 @@ function Loader({ imageSrc }: { imageSrc?: string }) {
   )
 }
 
-function AnalyzeResults({
+function SavedMealSummary({
   data,
-  imageSrc,
+  mealDate,
+  onLogAnother,
 }: {
   data: AnalyzeResult
-  imageSrc: string
+  mealDate: string
+  onLogAnother: () => void
 }) {
   return (
-    <div className="w-full space-y-6 rounded-lg border border-border bg-card p-6 text-card-foreground">
-      <section>
-        <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-          Your photo
-        </h2>
-        <div className="mt-3">
-          <ImagePreview src={imageSrc} alt="Captured food" />
-        </div>
-      </section>
+    <div className="w-full space-y-4 rounded-lg border border-border bg-card p-6 text-card-foreground">
+      <div className="space-y-1">
+        <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+          Saved
+        </p>
+        <p className="text-sm">
+          Meal logged for{" "}
+          <span className="font-medium">{formatMealDateLabel(mealDate)}</span>.
+        </p>
+      </div>
 
-      <Separator />
+      <dl className="grid grid-cols-2 gap-2">
+        {NUTRIENT_LABELS.map(({ key, label, unit }) => (
+          <div
+            key={key}
+            className="rounded-md border border-border bg-muted/40 px-3 py-2.5"
+          >
+            <dt className="text-xs text-muted-foreground">{label}</dt>
+            <dd className="mt-0.5 text-base font-semibold tabular-nums">
+              {Math.round(data.nutrients[key])}
+              <span className="ml-1 text-xs font-normal text-muted-foreground">
+                {unit}
+              </span>
+            </dd>
+          </div>
+        ))}
+      </dl>
 
-      <section>
-        <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-          Foods detected
-        </h2>
-        {data.foods.length > 0 ? (
-          <ul className="mt-3 space-y-2">
-            {data.foods.map((food, index) => (
-              <li
-                key={`${food}-${index}`}
-                className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm"
-              >
-                {food}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-3 text-sm text-muted-foreground">
-            No foods detected in this image.
-          </p>
-        )}
-      </section>
-
-      <Separator />
-
-      <section>
-        <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-          Estimated nutrition
-        </h2>
-        <dl className="mt-3 grid grid-cols-2 gap-3">
-          {NUTRIENT_LABELS.map(({ key, label, unit }) => (
-            <div
-              key={key}
-              className="rounded-md border border-border bg-muted/40 px-3 py-3"
-            >
-              <dt className="text-xs text-muted-foreground">{label}</dt>
-              <dd className="mt-1 text-lg font-semibold tabular-nums">
-                {Math.round(data.nutrients[key])}
-                <span className="ml-1 text-xs font-normal text-muted-foreground">
-                  {unit}
-                </span>
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <Button type="button" variant="outline" className="w-full" onClick={onLogAnother}>
+        Log another meal
+      </Button>
     </div>
   )
 }
@@ -133,6 +95,11 @@ export default function Page() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<AnalyzeResult | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [mealDate, setMealDate] = useState(() => toLocalDateString())
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [savedMealDate, setSavedMealDate] = useState<string | null>(null)
 
   const previewUrl = useMemo(
     () => (file ? URL.createObjectURL(file) : null),
@@ -144,12 +111,25 @@ export default function Page() {
     return () => URL.revokeObjectURL(previewUrl)
   }, [previewUrl])
 
+  function resetForNewMeal() {
+    setFile(null)
+    setResult(null)
+    setConfirmOpen(false)
+    setError(null)
+    setSaveError(null)
+    setSavedMealDate(null)
+    setMealDate(toLocalDateString())
+  }
+
   async function handleUpload() {
     if (!file || loading) return
 
     setLoading(true)
     setError(null)
     setResult(null)
+    setSaveError(null)
+    setSavedMealDate(null)
+    setConfirmOpen(false)
 
     try {
       const formData = new FormData()
@@ -168,10 +148,45 @@ export default function Page() {
       }
 
       setResult(data as AnalyzeResult)
+      setMealDate(toLocalDateString())
+      setConfirmOpen(true)
     } catch {
       setError("Something went wrong. Please try again.")
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleSaveMeal() {
+    if (!result || saving) return
+
+    setSaving(true)
+    setSaveError(null)
+
+    try {
+      const res = await fetch("/api/meals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          foods: result.foods,
+          nutrients: result.nutrients,
+          mealDate,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setSaveError(data.error ?? "Failed to save meal")
+        return
+      }
+
+      setSavedMealDate(data.mealDate ?? mealDate)
+      setConfirmOpen(false)
+    } catch {
+      setSaveError("Something went wrong. Please try again.")
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -188,24 +203,27 @@ export default function Page() {
         <Input
           type="file"
           accept="image/*"
-          disabled={loading}
+          disabled={loading || saving}
           onChange={(e) => {
             setFile(e.target.files?.[0] ?? null)
             setError(null)
             setResult(null)
+            setSaveError(null)
+            setSavedMealDate(null)
+            setConfirmOpen(false)
           }}
         />
 
         <Button
           onClick={handleUpload}
-          disabled={!file || loading}
+          disabled={!file || loading || saving}
           className="w-full"
         >
           {loading ? "Analyzing…" : "Analyze Food"}
         </Button>
       </div>
 
-      {previewUrl && !loading && !result && (
+      {previewUrl && !loading && !result && !savedMealDate && (
         <section className="space-y-2">
           <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
             Preview
@@ -230,8 +248,40 @@ export default function Page() {
         </div>
       )}
 
-      {!loading && result && previewUrl && (
-        <AnalyzeResults data={result} imageSrc={previewUrl} />
+      {savedMealDate && result && (
+        <SavedMealSummary
+          data={result}
+          mealDate={savedMealDate}
+          onLogAnother={resetForNewMeal}
+        />
+      )}
+
+      {result && previewUrl && !savedMealDate && (
+        <>
+          <section className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+            Analysis ready — review in the dialog, or{" "}
+            <button
+              type="button"
+              className="font-medium text-foreground underline underline-offset-2"
+              onClick={() => setConfirmOpen(true)}
+            >
+              open it again
+            </button>
+            .
+          </section>
+
+          <ConfirmMealDialog
+            open={confirmOpen}
+            onOpenChange={setConfirmOpen}
+            data={result}
+            imageSrc={previewUrl}
+            mealDate={mealDate}
+            onMealDateChange={setMealDate}
+            onSave={handleSaveMeal}
+            saving={saving}
+            saveError={saveError}
+          />
+        </>
       )}
     </div>
   )

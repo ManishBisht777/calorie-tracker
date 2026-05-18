@@ -33,7 +33,7 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>{children}</ThemeProvider>
-        <Oneko />
+        {/* <Oneko /> */}
       </body>
     </html>
   )
