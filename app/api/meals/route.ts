@@ -1,8 +1,16 @@
+import { and, eq, gte, lte, sql } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server"
 
 import { db, mealEntries } from "@/lib/db"
-import { isValidMealDate, type AnalyzeResult } from "@/lib/meal"
+import { isValidMealDate, type AnalyzeResult, type DayTotals } from "@/lib/meal"
 import { createClient } from "@/lib/supabase/server"
+
+const emptyTotals = (): DayTotals => ({
+  calories: 0,
+  protein: 0,
+  carbs: 0,
+  fat: 0,
+})
 
 function parseBody(body: unknown): AnalyzeResult & { mealDate: string } | null {
   if (!body || typeof body !== "object") return null
@@ -34,6 +42,98 @@ function parseBody(body: unknown): AnalyzeResult & { mealDate: string } | null {
       fat: n.fat as number,
     },
     mealDate,
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const date = searchParams.get("date")
+    const from = searchParams.get("from")
+    const to = searchParams.get("to")
+
+    if (date && (!isValidMealDate(date) || from || to)) {
+      return NextResponse.json({ error: "Invalid date query" }, { status: 400 })
+    }
+
+    if ((from && !isValidMealDate(from)) || (to && !isValidMealDate(to))) {
+      return NextResponse.json({ error: "Invalid date range" }, { status: 400 })
+    }
+
+    if (!date && !(from && to)) {
+      return NextResponse.json(
+        { error: "Provide date or from and to" },
+        { status: 400 }
+      )
+    }
+
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    const userFilter = user?.id
+      ? eq(mealEntries.userId, user.id)
+      : sql`${mealEntries.userId} IS NULL`
+
+    if (date) {
+      const [row] = await db
+        .select({
+          calories: sql<number>`coalesce(sum(${mealEntries.calories}), 0)`,
+          protein: sql<number>`coalesce(sum(${mealEntries.protein}), 0)`,
+          carbs: sql<number>`coalesce(sum(${mealEntries.carbs}), 0)`,
+          fat: sql<number>`coalesce(sum(${mealEntries.fat}), 0)`,
+        })
+        .from(mealEntries)
+        .where(and(userFilter, eq(mealEntries.mealDate, date)))
+
+      const totals: DayTotals = row
+        ? {
+            calories: Number(row.calories),
+            protein: Number(row.protein),
+            carbs: Number(row.carbs),
+            fat: Number(row.fat),
+          }
+        : emptyTotals()
+
+      return NextResponse.json({ date, totals })
+    }
+
+    const rows = await db
+      .select({
+        mealDate: mealEntries.mealDate,
+        calories: sql<number>`coalesce(sum(${mealEntries.calories}), 0)`,
+        protein: sql<number>`coalesce(sum(${mealEntries.protein}), 0)`,
+        carbs: sql<number>`coalesce(sum(${mealEntries.carbs}), 0)`,
+        fat: sql<number>`coalesce(sum(${mealEntries.fat}), 0)`,
+      })
+      .from(mealEntries)
+      .where(
+        and(
+          userFilter,
+          gte(mealEntries.mealDate, from!),
+          lte(mealEntries.mealDate, to!)
+        )
+      )
+      .groupBy(mealEntries.mealDate)
+
+    const byDate: Record<string, DayTotals> = {}
+    for (const row of rows) {
+      byDate[row.mealDate] = {
+        calories: Number(row.calories),
+        protein: Number(row.protein),
+        carbs: Number(row.carbs),
+        fat: Number(row.fat),
+      }
+    }
+
+    return NextResponse.json({ from, to, byDate })
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json(
+      { error: "Failed to load meals" },
+      { status: 500 }
+    )
   }
 }
 

@@ -50,3 +50,39 @@ export function formatMealDateLabel(dateStr: string) {
     year: "numeric",
   })
 }
+
+export type DayTotals = Nutrients
+
+export function parseMealDate(dateStr: string) {
+  const [y, m, d] = dateStr.split("-").map(Number)
+  return new Date(y, m - 1, d)
+}
+
+export function getWeekDates(anchorDate: string) {
+  const anchor = parseMealDate(anchorDate)
+  const start = new Date(anchor)
+  start.setDate(anchor.getDate() - anchor.getDay())
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const day = new Date(start)
+    day.setDate(start.getDate() + i)
+    return toLocalDateString(day)
+  })
+}
+
+export function isToday(dateStr: string) {
+  return dateStr === toLocalDateString()
+}
+
+export function formatCalendarDay(dateStr: string) {
+  const date = parseMealDate(dateStr)
+  return date.toLocaleDateString(undefined, { weekday: "short" })
+}
+
+export function formatCalendarMonthDay(dateStr: string) {
+  const date = parseMealDate(dateStr)
+  return {
+    month: date.toLocaleDateString(undefined, { month: "short" }),
+    day: date.getDate(),
+  }
+}

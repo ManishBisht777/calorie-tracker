@@ -1,6 +1,7 @@
 "use client"
 
 import { ConfirmMealDialog } from "@/components/confirm-meal-dialog"
+import { DailySummary } from "@/components/daily-summary"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -100,6 +101,8 @@ export default function Page() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [savedMealDate, setSavedMealDate] = useState<string | null>(null)
+  const [dashboardDate, setDashboardDate] = useState(() => toLocalDateString())
+  const [summaryRefreshKey, setSummaryRefreshKey] = useState(0)
 
   const previewUrl = useMemo(
     () => (file ? URL.createObjectURL(file) : null),
@@ -181,7 +184,10 @@ export default function Page() {
         return
       }
 
-      setSavedMealDate(data.mealDate ?? mealDate)
+      const savedDate = data.mealDate ?? mealDate
+      setSavedMealDate(savedDate)
+      setDashboardDate(savedDate)
+      setSummaryRefreshKey((k) => k + 1)
       setConfirmOpen(false)
     } catch {
       setSaveError("Something went wrong. Please try again.")
@@ -192,14 +198,26 @@ export default function Page() {
 
   return (
     <div className="mx-auto flex min-h-svh max-w-lg flex-col gap-8 p-6">
-      <header className="space-y-1">
-        <h1 className="text-lg font-semibold">Calorie Tracker</h1>
-        <p className="text-sm text-muted-foreground">
-          Upload a food photo to estimate calories and macros.
-        </p>
-      </header>
+      <DailySummary
+        selectedDate={dashboardDate}
+        onDateChange={(date) => {
+          setDashboardDate(date)
+          setMealDate(date)
+        }}
+        refreshKey={summaryRefreshKey}
+      />
 
-      <div className="flex flex-col gap-4">
+      <section className="space-y-4">
+        <header className="space-y-1">
+          <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+            Log meal
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Upload a food photo to estimate calories and macros.
+          </p>
+        </header>
+
+        <div className="flex flex-col gap-4">
         <Input
           type="file"
           accept="image/*"
@@ -221,7 +239,8 @@ export default function Page() {
         >
           {loading ? "Analyzing…" : "Analyze Food"}
         </Button>
-      </div>
+        </div>
+      </section>
 
       {previewUrl && !loading && !result && !savedMealDate && (
         <section className="space-y-2">
