@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 import {
   geminiErrorResponse,
   getGeminiApiKey,
-  getGeminiModel,
+  getGeminiTextModel,
   parseAnalyzeResult,
   parseGeminiJson,
 } from "@/lib/gemini"
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const model = getGeminiModel()
+    const model = getGeminiTextModel()
     if (!model) {
       return NextResponse.json(
         { error: "GOOGLE_API_KEY is missing in .env" },

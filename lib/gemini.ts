@@ -4,15 +4,27 @@ import type { AnalyzeResult } from "@/lib/meal"
 
 const apiKey = process.env.GOOGLE_API_KEY?.trim()
 const modelName = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash-lite"
+const textModelName =
+  process.env.GEMINI_TEXT_MODEL?.trim() || "gemini-2.0-flash-lite"
 
 export function getGeminiApiKey() {
   return apiKey
 }
 
-export function getGeminiModel() {
+function createModel(name: string) {
   if (!apiKey) return null
   const genAI = new GoogleGenerativeAI(apiKey)
-  return genAI.getGenerativeModel({ model: modelName })
+  return genAI.getGenerativeModel({ model: name })
+}
+
+/** Multimodal model for photo analysis. */
+export function getGeminiModel() {
+  return createModel(modelName)
+}
+
+/** Cheaper text-only model for meal-by-name estimates. */
+export function getGeminiTextModel() {
+  return createModel(textModelName)
 }
 
 export function parseGeminiJson(text: string): unknown {
