@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { getAuthUser, unauthorized } from "@/lib/auth"
 import {
   geminiErrorResponse,
   getGeminiApiKey,
@@ -10,6 +11,9 @@ import {
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getAuthUser()
+    if (!user) return unauthorized()
+
     if (!getGeminiApiKey()) {
       return NextResponse.json(
         { error: "GOOGLE_API_KEY is missing in .env" },

@@ -1,9 +1,9 @@
-import { and, eq, sql } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server"
 
+import { getAuthUser, unauthorized } from "@/lib/auth"
 import { db, mealEntries } from "@/lib/db"
 import { isValidMealDate, type AnalyzeResult } from "@/lib/meal"
-import { createClient } from "@/lib/supabase/server"
 
 function parseBody(body: unknown): AnalyzeResult & { mealDate: string } | null {
   if (!body || typeof body !== "object") return null
@@ -38,29 +38,21 @@ function parseBody(body: unknown): AnalyzeResult & { mealDate: string } | null {
   }
 }
 
-async function getUserFilter() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  return user?.id
-    ? eq(mealEntries.userId, user.id)
-    : sql`${mealEntries.userId} IS NULL`
-}
-
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getAuthUser()
+    if (!user) return unauthorized()
+
     const { id } = await params
     const parsed = parseBody(await req.json())
     if (!parsed) {
       return NextResponse.json({ error: "Invalid meal data" }, { status: 400 })
     }
 
-    const userFilter = await getUserFilter()
+    const userFilter = eq(mealEntries.userId, user.id)
 
     const [entry] = await db
       .update(mealEntries)
@@ -94,8 +86,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getAuthUser()
+    if (!user) return unauthorized()
+
     const { id } = await params
-    const userFilter = await getUserFilter()
+    const userFilter = eq(mealEntries.userId, user.id)
 
     const [entry] = await db
       .delete(mealEntries)

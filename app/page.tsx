@@ -152,6 +152,12 @@ export default function Page() {
     async function checkGoal() {
       try {
         const res = await fetch("/api/goals")
+
+        if (!cancelled && res.status === 401) {
+          router.replace("/login")
+          return
+        }
+
         const data = await res.json()
 
         if (!cancelled && !data.goal) {

@@ -1,9 +1,9 @@
 import { and, eq, gte, lte, sql } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server"
 
+import { getAuthUser, unauthorized } from "@/lib/auth"
 import { db, mealEntries } from "@/lib/db"
 import { isValidMealDate, type AnalyzeResult, type DayTotals } from "@/lib/meal"
-import { createClient } from "@/lib/supabase/server"
 
 const emptyTotals = (): DayTotals => ({
   calories: 0,
@@ -47,6 +47,9 @@ function parseBody(body: unknown): AnalyzeResult & { mealDate: string } | null {
 
 export async function GET(req: NextRequest) {
   try {
+    const user = await getAuthUser()
+    if (!user) return unauthorized()
+
     const { searchParams } = new URL(req.url)
     const date = searchParams.get("date")
     const from = searchParams.get("from")
@@ -67,14 +70,7 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    const userFilter = user?.id
-      ? eq(mealEntries.userId, user.id)
-      : sql`${mealEntries.userId} IS NULL`
+    const userFilter = eq(mealEntries.userId, user.id)
 
     if (date) {
       const rows = await db
@@ -158,20 +154,18 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getAuthUser()
+    if (!user) return unauthorized()
+
     const parsed = parseBody(await req.json())
     if (!parsed) {
       return NextResponse.json({ error: "Invalid meal data" }, { status: 400 })
     }
 
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
     const [entry] = await db
       .insert(mealEntries)
       .values({
-        userId: user?.id ?? null,
+        userId: user.id,
         mealDate: parsed.mealDate,
         foods: parsed.foods,
         calories: parsed.nutrients.calories,

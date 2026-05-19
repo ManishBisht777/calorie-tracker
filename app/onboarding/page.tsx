@@ -3,7 +3,7 @@
 import { IconGauge } from "@tabler/icons-react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -475,6 +475,35 @@ export default function OnboardingPage() {
     () => calculateMacros(form, proteinAdjustment),
     [form, proteinAdjustment]
   )
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function checkExistingGoal() {
+      try {
+        const res = await fetch("/api/goals")
+        if (cancelled) return
+
+        if (res.status === 401) {
+          router.replace("/login")
+          return
+        }
+
+        const data = await res.json()
+        if (data.goal) {
+          router.replace("/")
+        }
+      } catch {
+        // Allow onboarding if check fails
+      }
+    }
+
+    void checkExistingGoal()
+
+    return () => {
+      cancelled = true
+    }
+  }, [router])
 
   function handleCalculate() {
     setShowResults(true)

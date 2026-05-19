@@ -1,6 +1,7 @@
-import { and, eq, sql } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server"
 
+import { getAuthUser, unauthorized } from "@/lib/auth"
 import {
   calculateMacros,
   isValidBodyParams,
@@ -8,15 +9,8 @@ import {
 } from "@/lib/calorie-calculator"
 import { db, userGoals } from "@/lib/db"
 import type { Nutrients } from "@/lib/meal"
-import { createClient } from "@/lib/supabase/server"
 
 const PROTEIN_ADJUSTMENTS: ProteinAdjustment[] = ["low", "normal", "high"]
-
-function userFilter(userId: string | undefined) {
-  return userId
-    ? eq(userGoals.userId, userId)
-    : sql`${userGoals.userId} IS NULL`
-}
 
 function toNutrients(row: {
   calories: number
@@ -60,15 +54,13 @@ function parseSaveBody(body: unknown) {
 
 export async function GET() {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const user = await getAuthUser()
+    if (!user) return unauthorized()
 
     const [goal] = await db
       .select()
       .from(userGoals)
-      .where(userFilter(user?.id))
+      .where(eq(userGoals.userId, user.id))
       .limit(1)
 
     if (!goal) {
@@ -97,17 +89,15 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getAuthUser()
+    if (!user) return unauthorized()
+
     const parsed = parseSaveBody(await req.json())
     if (!parsed) {
       return NextResponse.json({ error: "Invalid goal data" }, { status: 400 })
     }
 
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    const filter = userFilter(user?.id)
+    const filter = eq(userGoals.userId, user.id)
     const [existing] = await db
       .select({ id: userGoals.id })
       .from(userGoals)
@@ -115,7 +105,7 @@ export async function POST(req: NextRequest) {
       .limit(1)
 
     const values = {
-      userId: user?.id ?? null,
+      userId: user.id,
       gender: parsed.body.gender,
       age: parsed.body.age,
       weightKg: parsed.body.weightKg,
