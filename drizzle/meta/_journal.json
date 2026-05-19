@@ -8,6 +8,20 @@
       "when": 1779124963715,
       "tag": "0000_init_meal_entries",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779124963716,
+      "tag": "0001_add_meal_date",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779124963717,
+      "tag": "0002_add_user_goals",
+      "breakpoints": true
     }
   ]
 }

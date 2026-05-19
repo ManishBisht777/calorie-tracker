@@ -3,7 +3,7 @@
 import { IconFlame, IconToolsKitchen2 } from "@tabler/icons-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { DAILY_GOALS } from "@/lib/goals"
+import { FALLBACK_DAILY_GOALS, type DailyGoals } from "@/lib/goals"
 import {
   formatCalendarDay,
   formatCalendarMonthDay,
@@ -235,6 +235,7 @@ export function DailySummary({
 }: DailySummaryProps) {
   const [totals, setTotals] = useState<DayTotals | null>(null)
   const [weekTotals, setWeekTotals] = useState<Record<string, DayTotals>>({})
+  const [dailyGoals, setDailyGoals] = useState<DailyGoals | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -247,13 +248,15 @@ export function DailySummary({
     setError(null)
 
     try {
-      const [dayRes, weekRes] = await Promise.all([
+      const [dayRes, weekRes, goalsRes] = await Promise.all([
         fetch(`/api/meals?date=${selectedDate}`),
         fetch(`/api/meals?from=${weekFrom}&to=${weekTo}`),
+        fetch("/api/goals"),
       ])
 
       const dayData = await dayRes.json()
       const weekData = await weekRes.json()
+      const goalsData = await goalsRes.json()
 
       if (!dayRes.ok) {
         setError(dayData.error ?? "Failed to load day")
@@ -267,6 +270,7 @@ export function DailySummary({
 
       setTotals(dayData.totals)
       setWeekTotals(weekData.byDate ?? {})
+      setDailyGoals(goalsData.goal?.nutrients ?? null)
     } catch {
       setError("Could not load your daily summary.")
     } finally {
@@ -278,9 +282,10 @@ export function DailySummary({
     void loadSummary()
   }, [loadSummary, refreshKey])
 
+  const goals = dailyGoals ?? FALLBACK_DAILY_GOALS
   const eaten = totals?.calories ?? 0
   const burned = 0
-  const remaining = DAILY_GOALS.calories - eaten + burned
+  const remaining = goals.calories - eaten + burned
 
   return (
     <section className={cn("space-y-5", className)}>
@@ -313,7 +318,7 @@ export function DailySummary({
           <div className="flex items-center justify-between gap-3">
             <CalorieRing
               remaining={remaining}
-              goal={DAILY_GOALS.calories}
+              goal={goals.calories}
               eaten={eaten}
             />
             <div className="flex flex-1 justify-around gap-2">
@@ -340,19 +345,19 @@ export function DailySummary({
             <MacroBar
               label="Carbs"
               current={totals?.carbs ?? 0}
-              goal={DAILY_GOALS.carbs}
+              goal={goals.carbs}
               fillClassName="bg-chart-2"
             />
             <MacroBar
               label="Protein"
               current={totals?.protein ?? 0}
-              goal={DAILY_GOALS.protein}
+              goal={goals.protein}
               fillClassName="bg-chart-4"
             />
             <MacroBar
               label="Fat"
               current={totals?.fat ?? 0}
-              goal={DAILY_GOALS.fat}
+              goal={goals.fat}
               fillClassName="bg-foreground"
             />
           </div>

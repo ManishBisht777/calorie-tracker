@@ -13,6 +13,7 @@ import {
   toLocalDateString,
 } from "@/lib/meal"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 
 type LogMode = "photo" | "text" | "manual"
@@ -115,6 +116,8 @@ function SavedMealSummary({
 }
 
 export default function Page() {
+  const router = useRouter()
+  const [checkingGoal, setCheckingGoal] = useState(true)
   const [logMode, setLogMode] = useState<LogMode>("photo")
   const [file, setFile] = useState<File | null>(null)
   const [mealDescription, setMealDescription] = useState("")
@@ -139,6 +142,32 @@ export default function Page() {
     if (!previewUrl) return
     return () => URL.revokeObjectURL(previewUrl)
   }, [previewUrl])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function checkGoal() {
+      try {
+        const res = await fetch("/api/goals")
+        const data = await res.json()
+
+        if (!cancelled && !data.goal) {
+          router.replace("/onboarding")
+          return
+        }
+      } catch {
+        // Allow dashboard if goal check fails
+      } finally {
+        if (!cancelled) setCheckingGoal(false)
+      }
+    }
+
+    void checkGoal()
+
+    return () => {
+      cancelled = true
+    }
+  }, [router])
 
   function resetForNewMeal() {
     setFile(null)
@@ -275,6 +304,17 @@ export default function Page() {
 
   const showConfirm =
     result && !savedMealDate && (logMode === "text" || (logMode === "photo" && previewUrl))
+
+  if (checkingGoal) {
+    return (
+      <div className="mx-auto flex min-h-svh max-w-lg items-center justify-center p-6">
+        <span
+          className="size-8 animate-spin rounded-full border-2 border-muted border-t-primary"
+          aria-label="Loading"
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto flex min-h-svh max-w-lg flex-col gap-8 p-6">
