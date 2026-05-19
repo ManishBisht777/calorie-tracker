@@ -12,7 +12,7 @@ export function AuthPageShell({ children }: { children: React.ReactNode }) {
       initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, ease: EASE_OUT }}
-      className="w-full max-w-md"
+      className="w-full"
     >
       {children}
     </motion.div>
