@@ -77,26 +77,45 @@ export async function GET(req: NextRequest) {
       : sql`${mealEntries.userId} IS NULL`
 
     if (date) {
-      const [row] = await db
+      const rows = await db
         .select({
-          calories: sql<number>`coalesce(sum(${mealEntries.calories}), 0)`,
-          protein: sql<number>`coalesce(sum(${mealEntries.protein}), 0)`,
-          carbs: sql<number>`coalesce(sum(${mealEntries.carbs}), 0)`,
-          fat: sql<number>`coalesce(sum(${mealEntries.fat}), 0)`,
+          id: mealEntries.id,
+          mealDate: mealEntries.mealDate,
+          foods: mealEntries.foods,
+          calories: mealEntries.calories,
+          protein: mealEntries.protein,
+          carbs: mealEntries.carbs,
+          fat: mealEntries.fat,
+          createdAt: mealEntries.createdAt,
         })
         .from(mealEntries)
         .where(and(userFilter, eq(mealEntries.mealDate, date)))
+        .orderBy(mealEntries.createdAt)
 
-      const totals: DayTotals = row
-        ? {
-            calories: Number(row.calories),
-            protein: Number(row.protein),
-            carbs: Number(row.carbs),
-            fat: Number(row.fat),
-          }
-        : emptyTotals()
+      const totals = rows.reduce<DayTotals>(
+        (acc, row) => ({
+          calories: acc.calories + Number(row.calories),
+          protein: acc.protein + Number(row.protein),
+          carbs: acc.carbs + Number(row.carbs),
+          fat: acc.fat + Number(row.fat),
+        }),
+        emptyTotals()
+      )
 
-      return NextResponse.json({ date, totals })
+      const meals = rows.map((row) => ({
+        id: row.id,
+        mealDate: row.mealDate,
+        foods: row.foods,
+        nutrients: {
+          calories: Number(row.calories),
+          protein: Number(row.protein),
+          carbs: Number(row.carbs),
+          fat: Number(row.fat),
+        },
+        createdAt: row.createdAt.toISOString(),
+      }))
+
+      return NextResponse.json({ date, totals, meals })
     }
 
     const rows = await db

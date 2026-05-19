@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -14,8 +14,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
+  formatFoodsLabel,
   formatMealDateLabel,
   NUTRIENT_LABELS,
+  type MealEntry,
   type Nutrients,
 } from "@/lib/meal"
 
@@ -24,7 +26,9 @@ type ManualMealDialogProps = {
   onOpenChange: (open: boolean) => void
   mealDate: string
   onMealDateChange: (date: string) => void
+  editMeal?: MealEntry | null
   onSaved: (mealDate: string, data: { foods: string[]; nutrients: Nutrients }) => void
+  onUpdated?: (mealDate: string) => void
 }
 
 const emptyNutrients = (): Nutrients => ({
@@ -44,12 +48,28 @@ export function ManualMealDialog({
   onOpenChange,
   mealDate,
   onMealDateChange,
+  editMeal = null,
   onSaved,
+  onUpdated,
 }: ManualMealDialogProps) {
+  const isEditing = Boolean(editMeal)
   const [foodName, setFoodName] = useState("")
   const [nutrients, setNutrients] = useState<Nutrients>(emptyNutrients)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+    if (editMeal) {
+      setFoodName(formatFoodsLabel(editMeal.foods))
+      setNutrients(editMeal.nutrients)
+      onMealDateChange(editMeal.mealDate)
+    } else {
+      setFoodName("")
+      setNutrients(emptyNutrients())
+    }
+    setError(null)
+  }, [open, editMeal, onMealDateChange])
 
   function resetForm() {
     setFoodName("")
@@ -81,42 +101,46 @@ export function ManualMealDialog({
     setSaving(true)
     setError(null)
 
+    const payload = {
+      foods: [name],
+      nutrients: {
+        calories: parsed[0]!,
+        protein: parsed[1]!,
+        carbs: parsed[2]!,
+        fat: parsed[3]!,
+      },
+      mealDate,
+    }
+
     try {
-      const res = await fetch("/api/meals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          foods: [name],
-          nutrients: {
-            calories: parsed[0]!,
-            protein: parsed[1]!,
-            carbs: parsed[2]!,
-            fat: parsed[3]!,
-          },
-          mealDate,
-        }),
-      })
+      const res = await fetch(
+        isEditing ? `/api/meals/${editMeal!.id}` : "/api/meals",
+        {
+          method: isEditing ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      )
 
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error ?? "Failed to save meal")
+        setError(data.error ?? (isEditing ? "Failed to update meal" : "Failed to save meal"))
         return
       }
 
       const savedDate = data.mealDate ?? mealDate
-      const savedData = {
-        foods: [name],
-        nutrients: {
-          calories: parsed[0]!,
-          protein: parsed[1]!,
-          carbs: parsed[2]!,
-          fat: parsed[3]!,
-        },
-      }
       resetForm()
       onOpenChange(false)
-      onSaved(savedDate, savedData)
+
+      if (isEditing) {
+        onUpdated?.(savedDate)
+      } else {
+        onSaved(savedDate, {
+          foods: payload.foods,
+          nutrients: payload.nutrients,
+        })
+      }
     } catch {
       setError("Something went wrong. Please try again.")
     } finally {
@@ -128,9 +152,12 @@ export function ManualMealDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[min(90vh,40rem)] gap-0 overflow-y-auto p-0 sm:max-w-md">
         <DialogHeader className="border-b border-border px-6 py-5">
-          <DialogTitle>Log meal manually</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit meal" : "Log meal manually"}</DialogTitle>
           <DialogDescription>
-            Enter nutrition details yourself — no AI estimate. Saves to{" "}
+            {isEditing
+              ? "Update this meal's name, date, and nutrition."
+              : "Enter nutrition details yourself — no AI estimate."}{" "}
+            Saves to{" "}
             <span className="text-foreground">{formatMealDateLabel(mealDate)}</span>.
           </DialogDescription>
         </DialogHeader>
@@ -206,7 +233,7 @@ export function ManualMealDialog({
             Cancel
           </Button>
           <Button type="button" disabled={saving} onClick={handleSave}>
-            {saving ? "Saving…" : "Save meal"}
+            {saving ? (isEditing ? "Saving…" : "Saving…") : isEditing ? "Save changes" : "Save meal"}
           </Button>
         </DialogFooter>
       </DialogContent>

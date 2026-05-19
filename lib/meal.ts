@@ -53,6 +53,19 @@ export function formatMealDateLabel(dateStr: string) {
 
 export type DayTotals = Nutrients
 
+export type MealEntry = {
+  id: string
+  mealDate: string
+  foods: string[]
+  nutrients: Nutrients
+  createdAt: string
+}
+
+export function formatFoodsLabel(foods: string[]) {
+  if (foods.length === 0) return "Meal"
+  return foods.join(", ")
+}
+
 export function parseMealDate(dateStr: string) {
   const [y, m, d] = dateStr.split("-").map(Number)
   return new Date(y, m - 1, d)

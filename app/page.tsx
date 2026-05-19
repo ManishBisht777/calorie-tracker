@@ -1,6 +1,7 @@
 "use client"
 
 import { ConfirmMealDialog } from "@/components/confirm-meal-dialog"
+import { DailyMealsList } from "@/components/daily-meals-list"
 import { DailySummary } from "@/components/daily-summary"
 import { ManualMealDialog } from "@/components/manual-meal-dialog"
 import { Button } from "@/components/ui/button"
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import {
   type AnalyzeResult,
   formatMealDateLabel,
+  type MealEntry,
   NUTRIENT_LABELS,
   toLocalDateString,
 } from "@/lib/meal"
@@ -132,6 +134,7 @@ export default function Page() {
   const [savedMealDate, setSavedMealDate] = useState<string | null>(null)
   const [dashboardDate, setDashboardDate] = useState(() => toLocalDateString())
   const [summaryRefreshKey, setSummaryRefreshKey] = useState(0)
+  const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null)
 
   const previewUrl = useMemo(
     () => (file ? URL.createObjectURL(file) : null),
@@ -193,6 +196,7 @@ export default function Page() {
     setLogMode(mode)
     clearPendingAnalysis()
     if (mode === "manual") {
+      setEditingMeal(null)
       setManualOpen(true)
     }
   }
@@ -327,6 +331,16 @@ export default function Page() {
         refreshKey={summaryRefreshKey}
       />
 
+      <DailyMealsList
+        selectedDate={dashboardDate}
+        refreshKey={summaryRefreshKey}
+        onEdit={(meal) => {
+          setEditingMeal(meal)
+          setManualOpen(true)
+        }}
+        onMealsChanged={() => setSummaryRefreshKey((k) => k + 1)}
+      />
+
       <section className="space-y-4">
         <header className="space-y-1">
           <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
@@ -421,7 +435,10 @@ export default function Page() {
               variant="outline"
               className="mt-3 w-full"
               disabled={loading || saving}
-              onClick={() => setManualOpen(true)}
+              onClick={() => {
+                setEditingMeal(null)
+                setManualOpen(true)
+              }}
             >
               Open manual entry
             </Button>
@@ -502,10 +519,19 @@ export default function Page() {
 
       <ManualMealDialog
         open={manualOpen}
-        onOpenChange={setManualOpen}
+        onOpenChange={(open) => {
+          if (!open) setEditingMeal(null)
+          setManualOpen(open)
+        }}
         mealDate={mealDate}
         onMealDateChange={setMealDate}
+        editMeal={editingMeal}
         onSaved={(date, data) => handleMealSaved(date, data)}
+        onUpdated={(date) => {
+          setDashboardDate(date)
+          setSummaryRefreshKey((k) => k + 1)
+          setEditingMeal(null)
+        }}
       />
     </div>
   )
