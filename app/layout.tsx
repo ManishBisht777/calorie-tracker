@@ -1,18 +1,21 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import { DM_Serif_Display, DM_Sans } from "next/font/google"
 
 import "./globals.css"
 import { AppHeader } from "@/components/layout/app-header"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 
-const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" })
-
-const fontSans = Geist({
+const dmSerifDisplay = DM_Serif_Display({
   subsets: ["latin"],
-  variable: "--font-sans",
+  weight: ["400"],
+  variable: "--font-heading",
 })
 
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-mono",
+})
 
 export default function RootLayout({
   children,
@@ -25,12 +28,18 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn(
         "antialiased",
-        fontSans.variable,
-        "font-mono",
-        geistMono.variable,
-        geistHeading.variable
+        dmSans.variable,
+        dmSerifDisplay.variable,
+        "font-mono"
       )}
     >
+      <head>
+        <script
+          async
+          crossOrigin="anonymous"
+          src="https://tweakcn.com/live-preview.min.js"
+        />
+      </head>
       <body>
         <ThemeProvider>
           <AppHeader />

@@ -102,7 +102,7 @@ function DiscreteSlider<T extends string>({
       <div className="relative px-1 pt-2">
         <div
           className={cn(
-            "absolute top-[calc(50%-1px)] right-1 left-1 h-px",
+            "absolute top-[calc(50%-10px)] right-0 left-0 h-px",
             inverted ? "bg-primary-foreground/25" : "bg-border"
           )}
         />
@@ -119,15 +119,10 @@ function DiscreteSlider<T extends string>({
               >
                 <span
                   className={cn(
-                    "relative z-10 block size-3.5 rounded-full border-2 transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
-                    "group-active:scale-[0.9] motion-reduce:group-active:scale-100",
-                    inverted
-                      ? selected
-                        ? "border-primary-foreground bg-primary-foreground"
-                        : "border-primary-foreground/50 bg-primary"
-                      : selected
-                        ? "border-primary bg-primary"
-                        : "border-border bg-card"
+                    "relative z-10 block size-3.5 border-2",
+                    selected
+                      ? "border-primary bg-primary"
+                      : "border-border bg-background"
                   )}
                 />
                 <span
@@ -156,25 +151,19 @@ function DiscreteSlider<T extends string>({
 function IntroPanel({ className }: { className?: string }) {
   return (
     <motion.div
-      initial={{ opacity: 0, transform: "translateX(-12px)" }}
-      animate={{ opacity: 1, transform: "translateX(0)" }}
-      transition={{ duration: 0.25, ease: EASE_OUT }}
-      className={cn(
-        "flex flex-col justify-between gap-8 p-8 lg:p-12",
-        className
-      )}
+      className={cn("flex flex-col justify-between gap-8 p-8", className)}
     >
       <div className="space-y-6">
-        <div className="flex size-12 items-center justify-center rounded-full bg-primary/10">
+        <div className="flex size-12 items-center justify-center rounded-md bg-primary/10">
           <IconGauge className="size-6 text-primary" stroke={1.75} />
         </div>
         <div className="space-y-3">
-          <h1 className="font-heading text-3xl font-semibold tracking-tight uppercase lg:text-4xl">
+          <h1 className="font-mono text-xl font-bold tracking-wide uppercase lg:text-2xl">
             Calories calculator
           </h1>
-          <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Calculate optimal macronutrient ratios for your body. Enter your age,
-            height, weight, gender, and activity level.
+          <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
+            Calculate optimal macronutrient ratios for your body. Enter your
+            age, height, weight, gender, and activity level.
           </p>
         </div>
       </div>
@@ -202,9 +191,7 @@ function OnboardingForm({
 }) {
   const activityDescription = ACTIVITY_DESCRIPTIONS[form.activityLevel]
   const canCalculate =
-    form.age >= 13 &&
-    form.weightKg >= 30 &&
-    form.heightCm >= 100
+    form.age >= 13 && form.weightKg >= 30 && form.heightCm >= 100
 
   const labelClass = inverted
     ? "text-primary-foreground/80"
@@ -214,99 +201,108 @@ function OnboardingForm({
     : ""
 
   return (
-    <div className={cn("flex flex-col gap-8", compact ? "p-6 lg:p-8" : "p-8 lg:p-10")}>
-      <div className="space-y-6">
-        <div className="flex gap-2">
-          <SegmentedButton
-            selected={form.gender === "male"}
-            onClick={() => onChange({ ...form, gender: "male" })}
-            inverted={inverted}
-          >
-            Male
-          </SegmentedButton>
-          <SegmentedButton
-            selected={form.gender === "female"}
-            onClick={() => onChange({ ...form, gender: "female" })}
-            inverted={inverted}
-          >
-            Female
-          </SegmentedButton>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4">
-          {(
-            [
-              { key: "age", label: "Age", placeholder: "Age" },
-              { key: "weightKg", label: "Weight", placeholder: "78 kg" },
-              { key: "heightCm", label: "Height", placeholder: "181 cm" },
-            ] as const
-          ).map(({ key, label, placeholder }) => (
-            <div key={key} className="space-y-1.5">
-              <label className={cn("text-[10px] font-semibold tracking-widest uppercase", labelClass)}>
-                {label}
-              </label>
-              <Input
-                type="number"
-                inputMode="decimal"
-                min={key === "age" ? 13 : undefined}
-                placeholder={placeholder}
-                value={form[key] || ""}
-                onChange={(e) => {
-                  const parsed = Number(e.target.value)
-                  onChange({
-                    ...form,
-                    [key]: Number.isFinite(parsed) ? parsed : 0,
-                  })
-                }}
-                className={cn("rounded-lg border px-3 py-2", inputClass)}
-              />
-            </div>
-          ))}
-        </div>
+    <div className={cn("flex flex-col space-y-8 p-8")}>
+      <div>
+        <h2 className="text-xl font-bold tracking-wide uppercase">
+          Body parameters
+        </h2>
       </div>
 
-      <div className="space-y-3">
-        <p className={cn("text-xs font-semibold tracking-widest uppercase", labelClass)}>
-          Activity level
-        </p>
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={form.activityLevel}
-            initial={{ opacity: 0, filter: "blur(2px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(2px)" }}
-            transition={{ duration: 0.18, ease: EASE_OUT }}
+      <div className="flex gap-2">
+        <Button
+          className={cn("flex-1")}
+          variant={form.gender === "male" ? "default" : "outline"}
+          onClick={() => onChange({ ...form, gender: "male" })}
+        >
+          Male
+        </Button>
+        <Button
+          className={cn("flex-1")}
+          variant={form.gender === "female" ? "default" : "outline"}
+          onClick={() => onChange({ ...form, gender: "female" })}
+        >
+          Female
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        {(
+          [
+            { key: "age", label: "Age", placeholder: "Age" },
+            { key: "weightKg", label: "Weight", placeholder: "78 kg" },
+            { key: "heightCm", label: "Height", placeholder: "181 cm" },
+          ] as const
+        ).map(({ key, label, placeholder }) => (
+          <div key={key} className="space-y-1.5">
+            <label
+              className={cn(
+                "text-xs font-semibold tracking-widest uppercase",
+                labelClass
+              )}
+            >
+              {label}
+            </label>
+            <Input
+              type="text"
+              min={key === "age" ? 13 : undefined}
+              placeholder={placeholder}
+              value={form[key] || ""}
+              onChange={(e) => {
+                const parsed = Number(e.target.value)
+                onChange({
+                  ...form,
+                  [key]: Number.isFinite(parsed) ? parsed : 0,
+                })
+              }}
+              className={cn("", inputClass)}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-4">
+        <div className="space-y-1">
+          <p
             className={cn(
-              "min-h-10 text-xs leading-relaxed",
-              inverted ? "text-primary-foreground/75" : "text-muted-foreground"
+              "text-xs font-semibold tracking-widest uppercase",
+              labelClass
             )}
           >
+            Activity level
+          </p>
+          <p
+            key={form.activityLevel}
+            className={cn("text-xs leading-relaxed text-muted-foreground")}
+          >
             {activityDescription}
-          </motion.p>
-        </AnimatePresence>
+          </p>
+        </div>
+
         <DiscreteSlider
           options={ACTIVITY_LEVELS}
           value={form.activityLevel}
           onChange={(activityLevel) => onChange({ ...form, activityLevel })}
-          inverted={inverted}
         />
       </div>
 
       <div className="space-y-3">
-        <p className={cn("text-xs font-semibold tracking-widest uppercase", labelClass)}>
+        <p
+          className={cn(
+            "text-xs font-semibold tracking-widest uppercase",
+            labelClass
+          )}
+        >
           Goals
         </p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {GOAL_TYPES.map((goal) => (
-            <SegmentedButton
+            <Button
               key={goal.id}
-              selected={form.goalType === goal.id}
+              variant={form.goalType === goal.id ? "default" : "outline"}
               onClick={() => onChange({ ...form, goalType: goal.id })}
-              inverted={inverted}
-              className="min-w-0 px-2"
             >
               {goal.label}
-            </SegmentedButton>
+            </Button>
           ))}
         </div>
       </div>
@@ -326,12 +322,13 @@ function OnboardingForm({
           type="button"
           onClick={onCalculate}
           disabled={!canCalculate}
-          className={cn(
-            "min-w-36 skew-x-[-8deg] rounded-none",
-            inverted && "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-          )}
+          // className={cn(
+          //   "min-w-36 skew-x-[-8deg] rounded-none",
+          //   inverted &&
+          //     "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+          // )}
         >
-          <span className="inline-block skew-x-[8deg]">Calculate</span>
+          <span className="inline-block">Calculate</span>
         </Button>
       </div>
     </div>
@@ -353,9 +350,16 @@ function MacroRow({
 
   return (
     <motion.div
-      initial={{ opacity: 0, transform: shouldReduceMotion ? "none" : "translateY(8px)" }}
+      initial={{
+        opacity: 0,
+        transform: shouldReduceMotion ? "none" : "translateY(8px)",
+      }}
       animate={{ opacity: 1, transform: "translateY(0)" }}
-      transition={{ duration: 0.22, ease: EASE_OUT, delay: shouldReduceMotion ? 0 : delay }}
+      transition={{
+        duration: 0.22,
+        ease: EASE_OUT,
+        delay: shouldReduceMotion ? 0 : delay,
+      }}
       className="flex items-center justify-between border-b border-border py-3 last:border-b-0"
     >
       <span className="text-sm font-medium">{label}</span>
@@ -386,7 +390,10 @@ function ResultsPanel({
 
   return (
     <motion.div
-      initial={{ opacity: 0, transform: shouldReduceMotion ? "none" : "translateX(16px)" }}
+      initial={{
+        opacity: 0,
+        transform: shouldReduceMotion ? "none" : "translateX(16px)",
+      }}
       animate={{ opacity: 1, transform: "translateX(0)" }}
       transition={{ duration: 0.28, ease: EASE_OUT }}
       className="flex flex-col gap-8 p-8 lg:p-12"
@@ -396,7 +403,10 @@ function ResultsPanel({
           Your result
         </p>
         <motion.p
-          initial={{ opacity: 0, transform: shouldReduceMotion ? "none" : "scale(0.98)" }}
+          initial={{
+            opacity: 0,
+            transform: shouldReduceMotion ? "none" : "scale(0.98)",
+          }}
           animate={{ opacity: 1, transform: "scale(1)" }}
           transition={{ duration: 0.25, ease: EASE_OUT, delay: 0.05 }}
           className="font-heading text-5xl font-semibold tracking-tight tabular-nums lg:text-6xl"
@@ -415,9 +425,24 @@ function ResultsPanel({
         <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
           Macronutrients
         </p>
-        <MacroRow label="Carbohydrate" grams={macros.carbs} percent={macros.carbsPercent} delay={0.08} />
-        <MacroRow label="Protein" grams={macros.protein} percent={macros.proteinPercent} delay={0.12} />
-        <MacroRow label="Fat" grams={macros.fat} percent={macros.fatPercent} delay={0.16} />
+        <MacroRow
+          label="Carbohydrate"
+          grams={macros.carbs}
+          percent={macros.carbsPercent}
+          delay={0.08}
+        />
+        <MacroRow
+          label="Protein"
+          grams={macros.protein}
+          percent={macros.proteinPercent}
+          delay={0.12}
+        />
+        <MacroRow
+          label="Fat"
+          grams={macros.fat}
+          percent={macros.fatPercent}
+          delay={0.16}
+        />
       </div>
 
       <div className="space-y-3">
@@ -426,8 +451,8 @@ function ResultsPanel({
             Adjust protein
           </p>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Higher protein supports muscle recovery. Lower protein leaves more room
-            for carbs and fat.
+            Higher protein supports muscle recovery. Lower protein leaves more
+            room for carbs and fat.
           </p>
         </div>
         <DiscreteSlider
@@ -545,8 +570,19 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <AnimatePresence mode="wait">
+    <div className="grid h-[calc(100vh-100px)] lg:grid-cols-2">
+      <IntroPanel />
+      <OnboardingForm
+        form={form}
+        onChange={(next) => {
+          setForm(next)
+          setSaveError(null)
+        }}
+        onClear={handleClear}
+        onCalculate={handleCalculate}
+      />
+
+      {/* <AnimatePresence mode="wait">
         {!showResults ? (
           <motion.div
             key="intro"
@@ -631,7 +667,7 @@ export default function OnboardingPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </div> */}
     </div>
   )
 }

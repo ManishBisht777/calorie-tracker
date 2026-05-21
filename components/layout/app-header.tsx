@@ -8,8 +8,8 @@ export async function AppHeader() {
 
   return (
     <header className="border-b border-border">
-      <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-        <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
           Calorie tracker
         </p>
         <UserMenu email={user.email ?? "Signed in"} />
