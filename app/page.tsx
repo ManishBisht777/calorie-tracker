@@ -47,7 +47,13 @@ function ImagePreview({ src, alt }: { src: string; alt: string }) {
   )
 }
 
-function Loader({ message, imageSrc }: { message?: string; imageSrc?: string }) {
+function Loader({
+  message,
+  imageSrc,
+}: {
+  message?: string
+  imageSrc?: string
+}) {
   return (
     <div className="flex w-full flex-col gap-4 rounded-lg border border-border bg-card p-4 text-card-foreground">
       {imageSrc && <ImagePreview src={imageSrc} alt="Food being analyzed" />}
@@ -110,7 +116,12 @@ function SavedMealSummary({
         ))}
       </dl>
 
-      <Button type="button" variant="outline" className="w-full" onClick={onLogAnother}>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={onLogAnother}
+      >
         Log another meal
       </Button>
     </div>
@@ -313,7 +324,9 @@ export default function Page() {
   }
 
   const showConfirm =
-    result && !savedMealDate && (logMode === "text" || (logMode === "photo" && previewUrl))
+    result &&
+    !savedMealDate &&
+    (logMode === "text" || (logMode === "photo" && previewUrl))
 
   if (checkingGoal) {
     return (
@@ -452,14 +465,18 @@ export default function Page() {
         )}
       </section>
 
-      {previewUrl && logMode === "photo" && !loading && !result && !savedMealDate && (
-        <section className="space-y-2">
-          <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-            Preview
-          </h2>
-          <ImagePreview src={previewUrl} alt="Selected food" />
-        </section>
-      )}
+      {previewUrl &&
+        logMode === "photo" &&
+        !loading &&
+        !result &&
+        !savedMealDate && (
+          <section className="space-y-2">
+            <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+              Preview
+            </h2>
+            <ImagePreview src={previewUrl} alt="Selected food" />
+          </section>
+        )}
 
       {loading && (
         <Loader
@@ -497,8 +514,8 @@ export default function Page() {
       {showConfirm && (
         <>
           <section className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-            {logMode === "photo" ? "Analysis ready" : "Estimate ready"} — review in the
-            dialog, or{" "}
+            {logMode === "photo" ? "Analysis ready" : "Estimate ready"} — review
+            in the dialog, or{" "}
             <button
               type="button"
               className="font-medium text-foreground underline underline-offset-2"
@@ -513,7 +530,9 @@ export default function Page() {
             open={confirmOpen}
             onOpenChange={setConfirmOpen}
             data={result}
-            imageSrc={logMode === "photo" ? previewUrl ?? undefined : undefined}
+            imageSrc={
+              logMode === "photo" ? (previewUrl ?? undefined) : undefined
+            }
             mealDate={mealDate}
             onMealDateChange={setMealDate}
             onSave={handleSaveMeal}

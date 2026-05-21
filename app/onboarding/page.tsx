@@ -50,42 +50,6 @@ const DEFAULT_FORM: BodyParams = {
   goalType: "lose_10",
 }
 
-function SegmentedButton({
-  selected,
-  onClick,
-  children,
-  className,
-  inverted,
-}: {
-  selected: boolean
-  onClick: () => void
-  children: React.ReactNode
-  className?: string
-  inverted?: boolean
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "flex-1 rounded-lg px-3 py-3 text-xs font-semibold tracking-widest uppercase transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
-        "active:scale-[0.97] motion-reduce:active:scale-100",
-        inverted
-          ? selected
-            ? "bg-primary-foreground text-primary shadow-sm"
-            : "bg-primary-foreground/10 text-primary-foreground/70 hover:bg-primary-foreground/15 hover:text-primary-foreground"
-          : selected
-            ? "bg-primary text-primary-foreground shadow-sm"
-            : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
-        className
-      )}
-      aria-pressed={selected}
-    >
-      {children}
-    </button>
-  )
-}
-
 function DiscreteSlider<T extends string>({
   options,
   value,
@@ -180,7 +144,6 @@ function OnboardingForm({
   onClear,
   onCalculate,
   inverted,
-  compact,
 }: {
   form: BodyParams
   onChange: (next: BodyParams) => void
@@ -201,7 +164,7 @@ function OnboardingForm({
     : ""
 
   return (
-    <div className={cn("flex flex-col space-y-8 p-8")}>
+    <div className={cn("flex flex-col space-y-8")}>
       <div>
         <h2 className="text-xl font-bold tracking-wide uppercase">
           Body parameters
@@ -396,53 +359,63 @@ function ResultsPanel({
       }}
       animate={{ opacity: 1, transform: "translateX(0)" }}
       transition={{ duration: 0.28, ease: EASE_OUT }}
-      className="flex flex-col gap-8 p-8 lg:p-12"
+      className="flex flex-col gap-8"
     >
       <div className="space-y-2">
         <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
           Your result
         </p>
-        <motion.p
-          initial={{
-            opacity: 0,
-            transform: shouldReduceMotion ? "none" : "scale(0.98)",
-          }}
-          animate={{ opacity: 1, transform: "scale(1)" }}
-          transition={{ duration: 0.25, ease: EASE_OUT, delay: 0.05 }}
-          className="font-heading text-5xl font-semibold tracking-tight tabular-nums lg:text-6xl"
-        >
-          {macros.calories}
-          <span className="ml-2 text-2xl font-normal text-muted-foreground lg:text-3xl">
-            kcal
+
+        <div className="flex items-center justify-between">
+          <motion.p
+            initial={{
+              opacity: 0,
+              transform: shouldReduceMotion ? "none" : "scale(0.98)",
+            }}
+            animate={{ opacity: 1, transform: "scale(1)" }}
+            transition={{ duration: 0.25, ease: EASE_OUT, delay: 0.05 }}
+            className="text-5xl font-bold tracking-wide tabular-nums lg:text-6xl"
+          >
+            {macros.calories}
+            <span className="ml-2 text-sm font-normal text-muted-foreground">
+              kcal/day
+            </span>
+          </motion.p>
+
+          <span className="text-sm text-muted-foreground">
+            Lean bulk (+300 kcal)
           </span>
-        </motion.p>
+        </div>
+
         <p className="text-sm text-muted-foreground">
           Suggested amount of calories per day.
         </p>
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-2">
         <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
           Macronutrients
         </p>
-        <MacroRow
-          label="Carbohydrate"
-          grams={macros.carbs}
-          percent={macros.carbsPercent}
-          delay={0.08}
-        />
-        <MacroRow
-          label="Protein"
-          grams={macros.protein}
-          percent={macros.proteinPercent}
-          delay={0.12}
-        />
-        <MacroRow
-          label="Fat"
-          grams={macros.fat}
-          percent={macros.fatPercent}
-          delay={0.16}
-        />
+        <div className="space-y-1">
+          <MacroRow
+            label="Carbohydrate"
+            grams={macros.carbs}
+            percent={macros.carbsPercent}
+            delay={0.08}
+          />
+          <MacroRow
+            label="Protein"
+            grams={macros.protein}
+            percent={macros.proteinPercent}
+            delay={0.12}
+          />
+          <MacroRow
+            label="Fat"
+            grams={macros.fat}
+            percent={macros.fatPercent}
+            delay={0.16}
+          />
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -474,9 +447,9 @@ function ResultsPanel({
           onClick={onSave}
           disabled={saving}
           size="lg"
-          className="min-w-40 skew-x-[-8deg] rounded-none"
+          className="min-w-40 rounded-none"
         >
-          <span className="inline-block skew-x-[8deg]">
+          <span className="inline-block">
             {saving ? "Saving…" : "Save goal"}
           </span>
         </Button>
@@ -514,10 +487,10 @@ export default function OnboardingPage() {
           return
         }
 
-        const data = await res.json()
-        if (data.goal) {
-          router.replace("/")
-        }
+        // const data = await res.json()
+        // if (data.goal) {
+        //   router.replace("/")
+        // }
       } catch {
         // Allow onboarding if check fails
       }
@@ -570,8 +543,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="grid h-[calc(100vh-100px)] lg:grid-cols-2">
-      <IntroPanel />
+    <div className="grid h-[calc(100vh-100px)] gap-18 p-8 lg:grid-cols-2">
       <OnboardingForm
         form={form}
         onChange={(next) => {
@@ -580,6 +552,16 @@ export default function OnboardingPage() {
         }}
         onClear={handleClear}
         onCalculate={handleCalculate}
+      />
+      {/* <IntroPanel /> */}
+
+      <ResultsPanel
+        macros={macros}
+        proteinAdjustment={proteinAdjustment}
+        onProteinChange={setProteinAdjustment}
+        onSave={handleSave}
+        saving={saving}
+        saveError={saveError}
       />
 
       {/* <AnimatePresence mode="wait">
