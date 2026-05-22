@@ -31,7 +31,12 @@ export default function PhotoAnalysis({ onSaved }: PhotoAnalysisProps) {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<AnalyzeResult | null>(null)
   const [mealDate, setMealDate] = useState(() => toLocalDateString())
-  const { saveMeal, loading: saving, error: saveError, resetError } = useSaveMeal()
+  const {
+    saveMeal,
+    loading: saving,
+    error: saveError,
+    resetError,
+  } = useSaveMeal()
 
   const previewUrl = useMemo(
     () => (file ? URL.createObjectURL(file) : null),
@@ -85,7 +90,9 @@ export default function PhotoAnalysis({ onSaved }: PhotoAnalysisProps) {
   if (loading) {
     return (
       <div className="space-y-4">
-        {previewUrl && <ImagePreview src={previewUrl} alt="Food being analyzed" />}
+        {previewUrl && (
+          <ImagePreview src={previewUrl} alt="Food being analyzed" />
+        )}
         <div
           role="status"
           aria-live="polite"
@@ -137,12 +144,6 @@ export default function PhotoAnalysis({ onSaved }: PhotoAnalysisProps) {
               <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
                 Analysed nutrients
               </p>
-              <p className="text-sm">
-                Log for{" "}
-                <span className="font-medium">
-                  {formatMealDateLabel(mealDate)}
-                </span>
-              </p>
             </div>
 
             <div className="space-y-2">
@@ -181,11 +182,7 @@ export default function PhotoAnalysis({ onSaved }: PhotoAnalysisProps) {
       </div>
 
       {result ? (
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full"
-        >
+        <Button onClick={handleSave} disabled={saving} className="w-full">
           {saving ? "Saving…" : "Save meal"}
         </Button>
       ) : (

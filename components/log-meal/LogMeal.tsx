@@ -15,6 +15,7 @@ import PhotoAnalysis from "./PhotoAnalysis"
 import TextAnalysis from "./TextAnalysis"
 import ManualEntry from "./ManualEntry"
 import { toast } from "sonner"
+import If from "../ui/If"
 
 type LogMode = "photo" | "text" | "manual"
 
@@ -104,15 +105,15 @@ export default function LogMeal({ onMealSaved }: LogMealProps) {
         </div>
 
         <div>
-          {logMode === "photo" && (
+          <If condition={logMode === "photo"}>
             <PhotoAnalysis key={flowKey} onSaved={handleMealSaved} />
-          )}
-          {logMode === "text" && (
+          </If>
+          <If condition={logMode === "text"}>
             <TextAnalysis key={flowKey} onSaved={handleMealSaved} />
-          )}
-          {logMode === "manual" && (
+          </If>
+          <If condition={logMode === "manual"}>
             <ManualEntry key={flowKey} onSaved={handleMealSaved} />
-          )}
+          </If>
         </div>
       </DialogContent>
     </Dialog>
