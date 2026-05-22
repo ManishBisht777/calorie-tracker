@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner"
 import { useSaveMeal } from "../hooks/useSaveMeal"
 import { NutrientsGrid } from "./NutrientsGrid"
+import { DatePicker } from "../ui/date-picker"
 
 function ImagePreview({ src, alt }: { src: string; alt: string }) {
   return (
@@ -87,32 +88,6 @@ export default function PhotoAnalysis({ onSaved }: PhotoAnalysisProps) {
     if (saved) onSaved(saved.mealDate)
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {previewUrl && (
-          <ImagePreview src={previewUrl} alt="Food being analyzed" />
-        )}
-        <div
-          role="status"
-          aria-live="polite"
-          className="flex flex-col items-center gap-4 py-4"
-        >
-          <span
-            className="size-8 animate-spin rounded-full border-2 border-muted border-t-primary"
-            aria-hidden
-          />
-          <div className="text-center">
-            <p className="text-sm font-medium">Analyzing your meal</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Detecting foods and estimating nutrition…
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-4">
       {!result && (
@@ -128,58 +103,65 @@ export default function PhotoAnalysis({ onSaved }: PhotoAnalysisProps) {
         />
       )}
 
-      <div className="grid grid-cols-2 gap-6">
-        {previewUrl && (
+      {previewUrl && (
+        <div className="grid grid-cols-2 gap-6">
           <section className="space-y-2">
             <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
               Food preview
             </h2>
             <ImagePreview src={previewUrl} alt="Selected food" />
           </section>
-        )}
 
-        {result && (
-          <div className="w-full space-y-4 bg-card text-card-foreground">
-            <div className="space-y-1">
+          {result ? (
+            <div className="w-full space-y-2 bg-card text-card-foreground">
               <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
                 Analysed nutrients
               </p>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="photo-meal-date">Log for</Label>
-              <Input
-                id="photo-meal-date"
-                type="date"
-                value={mealDate}
-                disabled={saving}
-                onChange={(e) => setMealDate(e.target.value)}
+              <div className="space-y-2">
+                <DatePicker
+                  value={new Date(mealDate)}
+                  onChange={(date) =>
+                    setMealDate(date?.toISOString() ?? toLocalDateString())
+                  }
+                />
+              </div>
+
+              {result.foods.length > 0 && (
+                <p className="text-sm capitalize">{result.foods.join(", ")}</p>
+              )}
+
+              <NutrientsGrid nutrients={result.nutrients} />
+            </div>
+          ) : loading ? (
+            <div
+              role="status"
+              aria-live="polite"
+              className="flex flex-col items-center justify-center gap-4 py-4"
+            >
+              <span
+                className="size-8 animate-spin rounded-full border-2 border-muted border-t-primary"
+                aria-hidden
               />
+              <div className="text-center">
+                <p className="text-sm font-medium">Analyzing your meal</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Detecting foods and estimating nutrition…
+                </p>
+              </div>
             </div>
-
-            {result.foods.length > 0 && (
-              <ul className="space-y-1.5">
-                {result.foods.map((food, index) => (
-                  <li
-                    key={`${food}-${index}`}
-                    className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm"
-                  >
-                    {food}
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <NutrientsGrid nutrients={result.nutrients} />
-
-            {saveError && (
-              <p role="alert" className="text-sm text-destructive">
-                {saveError}
+          ) : (
+            <div className="mt-5">
+              <p className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
+                Note
               </p>
-            )}
-          </div>
-        )}
-      </div>
+              <p className="text-xs">
+                calories will be estimated and not exact values
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {result ? (
         <Button onClick={handleSave} disabled={saving} className="w-full">
