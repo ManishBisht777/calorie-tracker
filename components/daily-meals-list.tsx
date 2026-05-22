@@ -63,11 +63,15 @@ function MealCard({
   }
 
   return (
-    <li className="rounded-xl border border-border bg-card p-4 shadow-sm">
+    <li className="border border-border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-1">
-          <p className="font-medium leading-snug">{formatFoodsLabel(meal.foods)}</p>
-          <p className="text-xs text-muted-foreground">{formatTime(meal.createdAt)}</p>
+          <p className="leading-snug font-medium">
+            {formatFoodsLabel(meal.foods)}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {formatTime(meal.createdAt)}
+          </p>
         </div>
         <div className="flex shrink-0 gap-1">
           <Button
@@ -97,7 +101,7 @@ function MealCard({
 
       <dl className="mt-3 grid grid-cols-4 gap-2">
         {NUTRIENT_LABELS.map(({ key, label, unit }) => (
-          <div key={key} className="rounded-md bg-muted/40 px-2 py-1.5 text-center">
+          <div key={key} className="bg-muted/40 px-2 py-1.5 text-center">
             <dt className="text-[10px] text-muted-foreground">{label}</dt>
             <dd className="mt-0.5 text-sm font-semibold tabular-nums">
               {Math.round(meal.nutrients[key])}
@@ -189,19 +193,16 @@ export function DailyMealsList({
         <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
           Meals
         </h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           {formatMealDateLabel(selectedDate)}
         </p>
       </header>
 
-      {error && (
-        <p className="text-sm text-destructive" role="alert">
-          {error}
-        </p>
-      )}
-
       <div
-        className={cn("transition-opacity duration-200", loading && "opacity-60")}
+        className={cn(
+          "transition-opacity duration-200",
+          loading && "opacity-60"
+        )}
         aria-busy={loading}
       >
         {!loading && meals.length === 0 && !error && (

@@ -75,7 +75,18 @@
     --sidebar-ring: oklch(0.56 0.021 213.5);
 }
 
+@keyframes water-wave {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
 @theme inline {
+    --animate-water-wave: water-wave 4s linear infinite;
+    --animate-water-wave-slow: water-wave 6s linear infinite;
     --font-mono: var(--font-mono);
     --font-heading: var(--font-heading);
     --color-sidebar-ring: var(--sidebar-ring);

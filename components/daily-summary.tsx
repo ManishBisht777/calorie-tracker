@@ -74,7 +74,7 @@ function CalorieRing({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-2xl font-semibold tabular-nums tracking-tight">
+        <span className="text-2xl font-semibold tracking-tight tabular-nums">
           {formatKcal(Math.max(remaining, 0))}
         </span>
         <span className="mt-0.5 text-xs text-muted-foreground">
@@ -139,10 +139,10 @@ function MacroBar({
   return (
     <div className="flex flex-1 flex-col gap-2">
       <p className="text-sm font-semibold">{label}</p>
-      <div className="h-2 overflow-hidden rounded-full bg-muted">
+      <div className="h-2 overflow-hidden bg-muted">
         <div
           className={cn(
-            "h-full rounded-full transition-[width] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
+            "h-full transition-[width] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
             fillClassName
           )}
           style={{ width: `${progress * 100}%` }}
@@ -168,8 +168,8 @@ function CalendarStrip({
   caloriesByDate: Record<string, DayTotals>
 }) {
   return (
-    <div className="-mx-1 overflow-x-auto px-1 pb-1 scrollbar-none [&::-webkit-scrollbar]:hidden">
-      <div className="flex min-w-max gap-1">
+    <div className="-mx-1 scrollbar-none overflow-x-auto px-1 pb-1 [&::-webkit-scrollbar]:hidden">
+      <div className="flex min-w-max gap-3">
         {weekDates.map((date) => {
           const selected = date === selectedDate
           const today = isToday(date)
@@ -182,9 +182,9 @@ function CalendarStrip({
               type="button"
               onClick={() => onSelect(date)}
               className={cn(
-                "flex min-w-13 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 text-center transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
+                "flex min-w-13 flex-col items-center justify-center gap-0.5 px-3 text-center transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
                 "active:scale-[0.97] motion-reduce:active:scale-100",
-                selected && today && "min-h-[4.5rem] py-3",
+                selected && today && "min-h-18 py-3",
                 selected && !today && "py-2.5",
                 !selected && "py-2.5",
                 selected
@@ -194,30 +194,14 @@ function CalendarStrip({
               aria-pressed={selected}
               aria-label={`${formatCalendarDay(date)} ${month} ${day}${today ? ", today" : ""}`}
             >
-              {selected && today ? (
-                <>
-                  <span className="text-[10px] font-medium leading-none opacity-90">
-                    Today
-                  </span>
-                  <span className="text-[10px] leading-none opacity-90">
-                    {month}
-                  </span>
-                  <span className="text-xl font-semibold leading-none tabular-nums">
-                    {day}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-[11px] font-medium leading-none">
-                    {formatCalendarDay(date)}
-                  </span>
-                  <span className="text-lg font-semibold leading-none tabular-nums">
-                    {day}
-                  </span>
-                  {hasMeals && !selected && (
-                    <span className="mt-0.5 size-1 rounded-full bg-primary/70" />
-                  )}
-                </>
+              <span className="text-[11px] leading-none font-medium">
+                {formatCalendarDay(date)}
+              </span>
+              <span className="text-lg leading-none font-semibold tabular-nums">
+                {day}
+              </span>
+              {hasMeals && !selected && (
+                <span className="mt-0.5 size-1 rounded-full bg-primary/70" />
               )}
             </button>
           )
@@ -289,8 +273,8 @@ export function DailySummary({
 
   return (
     <section className={cn("space-y-5", className)}>
-      <header className="space-y-4">
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-semibold tracking-wide">
           Calorie Tracker
         </h1>
         <CalendarStrip
@@ -299,15 +283,9 @@ export function DailySummary({
           onSelect={onDateChange}
           caloriesByDate={weekTotals}
         />
-      </header>
+      </div>
 
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        {error && (
-          <p className="mb-4 text-sm text-destructive" role="alert">
-            {error}
-          </p>
-        )}
-
+      <div className="">
         <div
           className={cn(
             "flex flex-col gap-6 transition-opacity duration-200",
@@ -341,7 +319,7 @@ export function DailySummary({
             </div>
           </div>
 
-          <div className="flex gap-4 border-t border-border pt-5">
+          <div className="flex gap-4 border-border pt-5">
             <MacroBar
               label="Carbs"
               current={totals?.carbs ?? 0}
