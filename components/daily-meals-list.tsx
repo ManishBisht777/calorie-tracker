@@ -11,6 +11,7 @@ import {
   type MealEntry,
 } from "@/lib/meal"
 import { cn } from "@/lib/utils"
+import { ScrollArea } from "./ui/scroll-area"
 
 type DailyMealsListProps = {
   selectedDate: string
@@ -63,15 +64,15 @@ function MealCard({
   }
 
   return (
-    <li className="border border-border bg-card p-4">
+    <div className="border border-border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-1">
           <p className="leading-snug font-medium">
             {formatFoodsLabel(meal.foods)}
           </p>
-          <p className="text-xs text-muted-foreground">
+          {/* <p className="text-xs text-muted-foreground">
             {formatTime(meal.createdAt)}
-          </p>
+          </p> */}
         </div>
         <div className="flex shrink-0 gap-1">
           <Button
@@ -142,7 +143,7 @@ function MealCard({
           {error}
         </p>
       )}
-    </li>
+    </div>
   )
 }
 
@@ -212,16 +213,18 @@ export function DailyMealsList({
         )}
 
         {meals.length > 0 && (
-          <ul className="space-y-3">
-            {meals.map((meal) => (
-              <MealCard
-                key={meal.id}
-                meal={meal}
-                onEdit={onEdit}
-                onDeleted={handleDeleted}
-              />
-            ))}
-          </ul>
+          <ScrollArea className="h-[350px] pr-3">
+            <div className="space-y-3">
+              {meals.map((meal) => (
+                <MealCard
+                  key={meal.id}
+                  meal={meal}
+                  onEdit={onEdit}
+                  onDeleted={handleDeleted}
+                />
+              ))}
+            </div>
+          </ScrollArea>
         )}
       </div>
     </section>

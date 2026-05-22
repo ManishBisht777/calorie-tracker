@@ -4,6 +4,7 @@ import "./globals.css"
 import { AppHeader } from "@/components/layout/app-header"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
+import { Toaster } from "@/components/ui/sonner"
 
 const dmSerifDisplay = DM_Serif_Display({
   subsets: ["latin"],
@@ -43,6 +44,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <AppHeader />
+          <Toaster />
           {children}
         </ThemeProvider>
       </body>

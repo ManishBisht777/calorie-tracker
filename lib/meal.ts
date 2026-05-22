@@ -44,8 +44,7 @@ export function isValidMealDate(value: string) {
 export function formatMealDateLabel(dateStr: string) {
   const [y, m, d] = dateStr.split("-").map(Number)
   return new Date(y, m - 1, d).toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "long",
+    month: "short",
     day: "numeric",
     year: "numeric",
   })
