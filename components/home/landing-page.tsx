@@ -10,67 +10,42 @@ import { cn } from "@/lib/utils"
 const EASE_OUT = [0.23, 1, 0.32, 1] as const
 
 const STATS = [
-  { value: "< 30s", label: "Average time to log a meal" },
-  { value: "3", label: "Ways to add food to your day" },
-  { value: "7", label: "Days visible on your dashboard" },
+  { value: "< 30 seconds", label: "Average time to log a meal" },
+  { value: "3 ways", label: "Add food to your day" },
+  { value: "7-day view", label: "Track your progress across the week" },
 ] as const
 
 const BENTO_ITEMS = [
   {
     title: "Text logging",
     description:
-      'Type what you ate — "two eggs, toast, black coffee" — and get an instant calorie estimate.',
+      'Describe your meal naturally—"two eggs, toast, black coffee"—and get an instant calorie estimate.',
     className: "col-span-2 row-span-2 min-h-44",
     accent: "bg-gray-50",
   },
   {
     title: "Calorie ring",
-    description: "See remaining calories at a glance.",
+    description: "See your remaining calories at a glance.",
     className: "col-span-1 row-span-1",
     accent: "bg-gray-50",
   },
   {
-    title: "Macro split",
-    description: "Protein, carbs, and fat tracked together.",
+    title: "Macro tracking",
+    description: "Protein, carbs, and fats—clearly visualized.",
     className: "col-span-1 row-span-1",
     accent: "bg-gray-50",
   },
   {
-    title: "Edit any meal",
-    description: "Tap to fix portions or numbers after logging.",
+    title: "Edit anytime",
+    description: "Update portions or values with a tap.",
     className: "col-span-1 row-span-1",
     accent: "bg-gray-50",
   },
   {
-    title: "Pick any date",
-    description: "Log yesterday's dinner or plan ahead.",
+    title: "Flexible dates",
+    description: "Log past meals or plan ahead with ease.",
     className: "col-span-1 row-span-1",
     accent: "bg-gray-50",
-  },
-  // {
-  //   title: "Goal calculator",
-  //   description:
-  //     "Set targets from your body stats using the Mifflin–St Jeor formula. Lose, maintain, or gain with adjusted macros.",
-  //   className: "col-span-2 row-span-1",
-  //   accent: "bg-primary/5",
-  // },
-] as const
-
-const FEATURES = [
-  {
-    title: "Log by text",
-    description:
-      "Describe what you ate in plain language. The app estimates calories and macros for you.",
-  },
-  {
-    title: "Manual entry",
-    description:
-      "Prefer precision? Enter meals yourself with full control over every number.",
-  },
-  {
-    title: "Daily dashboard",
-    description:
-      "See calories eaten, remaining, and your macro breakdown for any day at a glance.",
   },
 ] as const
 
@@ -79,44 +54,44 @@ const STEPS = [
     step: "01",
     title: "Set your goal",
     description:
-      "Enter your stats and pick a target. We calculate your daily calorie budget.",
+      "Enter your details and choose your target. We calculate your daily calorie budget.",
   },
   {
     step: "02",
     title: "Log your meals",
     description:
-      "Add breakfast, lunch, dinner, and snacks as you go through the day.",
+      "Track breakfast, lunch, dinner, and snacks throughout the day.",
   },
   {
     step: "03",
     title: "Stay on track",
     description:
-      "Watch your progress update in real time and adjust before the day ends.",
+      "Monitor your progress in real time and adjust before the day ends.",
   },
 ] as const
 
 const MACROS = [
-  { label: "Protein", detail: "Supports muscle and recovery targets" },
-  { label: "Carbs", detail: "Fuel for training and daily energy" },
-  { label: "Fat", detail: "Balanced intake alongside your goal" },
+  { label: "Protein", detail: "Supports muscle growth and recovery" },
+  { label: "Carbohydrates", detail: "Fuels your workouts and daily energy" },
+  { label: "Fats", detail: "Maintains balance and overall health" },
 ] as const
 
 const FAQ = [
   {
     q: "Do I need to weigh every ingredient?",
-    a: "No. Text logging works for quick estimates. Switch to manual entry when you want exact numbers.",
+    a: "No. Use text logging for quick estimates, or switch to manual entry for precision.",
   },
   {
     q: "Can I log meals from previous days?",
-    a: "Yes. Change the date on any log screen and add or edit meals for that day.",
+    a: "Yes. Simply select a date and add or edit entries anytime.",
   },
   {
-    q: "How are my calorie targets calculated?",
-    a: "During onboarding we use your age, height, weight, activity level, and goal to set a daily budget.",
+    q: "How are calorie targets calculated?",
+    a: "We use your age, height, weight, activity level, and goal during onboarding.",
   },
   {
     q: "Is it free to start?",
-    a: "Yes. Create an account, complete onboarding, and start tracking immediately.",
+    a: "Yes. Create an account and begin tracking immediately.",
   },
 ] as const
 
@@ -166,13 +141,13 @@ export function LandingPage() {
       <div className="flex w-full flex-col items-center gap-24 text-center">
         {/* Hero */}
         <FadeIn className="max-w-xl space-y-6">
-          <SectionLabel>Calorie tracker</SectionLabel>
+          <SectionLabel>Calorie Tracker</SectionLabel>
           <h1 className="text-4xl leading-tight font-bold tracking-wide md:text-5xl">
-            Know what you eat. Hit your goals.
+            Know what you eat. Reach your goals.
           </h1>
           <p className="mx-auto text-sm leading-relaxed text-muted-foreground md:text-base">
-            A simple way to log meals, track calories, and stay accountable
-            without spreadsheets or guesswork.
+            A simple, intuitive way to log meals, track calories, and stay
+            consistent—without spreadsheets or guesswork.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Button asChild>
@@ -186,7 +161,10 @@ export function LandingPage() {
         </FadeIn>
 
         {/* Stats strip */}
-        <section className="w-full max-w-2xl">
+        <section className="w-full max-w-2xl space-y-6">
+          <FadeIn delay={0.06}>
+            <SectionLabel>Built for speed and simplicity</SectionLabel>
+          </FadeIn>
           <div className="grid grid-cols-3 divide-x divide-border border border-border">
             {STATS.map((stat, index) => (
               <FadeIn
@@ -210,8 +188,8 @@ export function LandingPage() {
           <FadeIn delay={0.08} className="space-y-2">
             <SectionLabel>Everything in one place</SectionLabel>
             <p className="mx-auto max-w-lg text-sm text-muted-foreground">
-              The app is built around a single daily view — log fast, review
-              often, adjust when you need to.
+              Designed around a focused daily view—log quickly, review
+              effortlessly, and adjust when needed.
             </p>
           </FadeIn>
           <div className="grid grid-cols-2 gap-3 text-left md:grid-cols-4">
@@ -228,27 +206,6 @@ export function LandingPage() {
                 <p className="text-sm font-semibold">{item.title}</p>
                 <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
                   {item.description}
-                </p>
-              </FadeIn>
-            ))}
-          </div>
-        </section>
-
-        {/* Feature list — stacked cards */}
-        <section className="w-full max-w-xl space-y-6">
-          <FadeIn delay={0.08}>
-            <SectionLabel>What you get</SectionLabel>
-          </FadeIn>
-          <div className="space-y-3 text-left">
-            {FEATURES.map((feature, index) => (
-              <FadeIn
-                key={feature.title}
-                delay={0.1 + index * 0.06}
-                className="border border-border bg-card p-5"
-              >
-                <p className="text-sm font-semibold">{feature.title}</p>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  {feature.description}
                 </p>
               </FadeIn>
             ))}
@@ -282,10 +239,10 @@ export function LandingPage() {
         {/* Macros — pill row + wide card */}
         <section className="w-full space-y-4">
           <FadeIn delay={0.08} className="space-y-2">
-            <SectionLabel>Macros, not just calories</SectionLabel>
+            <SectionLabel>More than calories</SectionLabel>
             <p className="mx-auto max-w-lg text-sm text-muted-foreground">
-              Your goal includes protein, carbs, and fat — not a single number
-              in isolation.
+              Your nutrition is more than a single number. Track the balance
+              that matters.
             </p>
           </FadeIn>
           <FadeIn
@@ -327,7 +284,7 @@ export function LandingPage() {
               &ldquo;Tracking should take seconds, not minutes.&rdquo;
             </p>
             <footer className="text-xs text-muted-foreground">
-              Built for people who want clarity without the friction.
+              Built for clarity. Designed for consistency.
             </footer>
           </blockquote>
         </FadeIn>
@@ -339,19 +296,18 @@ export function LandingPage() {
             className="border border-border bg-primary/5 p-6 md:col-span-1"
           >
             <SectionLabel>Built for daily use</SectionLabel>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              No clutter. No distractions. Open the app, log a meal, and move on
-              with your day.
+            <p className="mt-4 text-sm font-semibold">No clutter</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Open the app, log your meal, and move on.
             </p>
           </FadeIn>
           <FadeIn
             delay={0.12}
             className="flex flex-col justify-center border border-border p-6"
           >
-            <p className="text-xs font-semibold uppercase">Works on any day</p>
+            <p className="text-xs font-semibold uppercase">Works across days</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Scroll through the week, jump to a date, and see how each day
-              compared to your target.
+              Scroll through your week and compare progress effortlessly.
             </p>
           </FadeIn>
         </section>
@@ -359,7 +315,7 @@ export function LandingPage() {
         {/* FAQ — accordion-style list */}
         <section className="w-full max-w-2xl space-y-6 text-left">
           <FadeIn delay={0.08} className="text-center">
-            <SectionLabel>Common questions</SectionLabel>
+            <SectionLabel>Frequently asked questions</SectionLabel>
           </FadeIn>
           <div className="divide-y divide-border border border-border">
             {FAQ.map((item, index) => (
@@ -383,9 +339,9 @@ export function LandingPage() {
           className="w-full max-w-xl space-y-4 border-t border-border pt-12"
         >
           <SectionLabel>Get started</SectionLabel>
-          <p className="text-lg font-semibold">Ready to start tracking?</p>
+          <p className="text-lg font-semibold">Start tracking today</p>
           <p className="text-sm text-muted-foreground">
-            Create a free account and set your first goal in under a minute.
+            Create your free account and set your first goal in under a minute.
           </p>
           <motion.div
             initial={{
