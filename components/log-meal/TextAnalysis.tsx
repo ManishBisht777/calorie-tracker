@@ -24,25 +24,10 @@ type TextAnalysisProps = {
   onSaved: (mealDate: string) => void
 }
 
-const sampleFood = {
-  foods: [
-    "2 bananas",
-    "2 tablespoons protein powder",
-    "1 cup oats",
-    "1 scoop peanut butter",
-    "350ml milk",
-  ],
-  nutrients: {
-    calories: 780,
-    protein: 45,
-    carbs: 90,
-    fat: 25,
-  },
-}
 export default function TextAnalysis({ onSaved }: TextAnalysisProps) {
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<AnalyzeResult | null>(sampleFood)
+  const [result, setResult] = useState<AnalyzeResult | null>(null)
   const [mealDate, setMealDate] = useState(() => toLocalDateString())
   const {
     saveMeal,

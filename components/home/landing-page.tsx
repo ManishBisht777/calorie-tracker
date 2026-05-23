@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { motion, useReducedMotion } from "motion/react"
 
+import { InstallButton } from "@/components/pwa/install-button"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -180,6 +181,7 @@ export function LandingPage() {
             <Button variant="outline" asChild>
               <Link href="/login">Log in</Link>
             </Button>
+            <InstallButton />
           </div>
         </FadeIn>
 
@@ -404,6 +406,7 @@ export function LandingPage() {
             <Button variant="ghost" asChild size="lg">
               <Link href="/login">I already have an account</Link>
             </Button>
+            <InstallButton alwaysShow size="lg" variant="secondary" />
           </motion.div>
         </FadeIn>
       </div>

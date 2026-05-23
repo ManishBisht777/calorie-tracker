@@ -1,3 +1,4 @@
+import type { Metadata, Viewport } from "next"
 import { DM_Serif_Display, DM_Sans } from "next/font/google"
 
 import "./globals.css"
@@ -6,6 +7,28 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
+
+export const metadata: Metadata = {
+  title: "Calorie Tracker",
+  description:
+    "Log meals, track calories, and stay accountable without spreadsheets or guesswork.",
+  applicationName: "Calorie Tracker",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Calorie Tracker",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#222222" },
+  ],
+}
 
 const dmSerifDisplay = DM_Serif_Display({
   subsets: ["latin"],
