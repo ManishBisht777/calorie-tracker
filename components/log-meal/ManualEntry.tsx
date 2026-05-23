@@ -11,6 +11,7 @@ import {
   toLocalDateString,
 } from "@/lib/meal"
 import { useSaveMeal } from "../hooks/useSaveMeal"
+import { DatePicker } from "../ui/date-picker"
 
 type ManualEntryProps = {
   onSaved: (mealDate: string) => void
@@ -33,7 +34,12 @@ export default function ManualEntry({ onSaved }: ManualEntryProps) {
   const [nutrients, setNutrients] = useState<Nutrients>(emptyNutrients)
   const [mealDate, setMealDate] = useState(() => toLocalDateString())
   const [validationError, setValidationError] = useState<string | null>(null)
-  const { saveMeal, loading: saving, error: saveError, resetError } = useSaveMeal()
+  const {
+    saveMeal,
+    loading: saving,
+    error: saveError,
+    resetError,
+  } = useSaveMeal()
 
   async function handleSave() {
     const name = foodName.trim()
@@ -72,8 +78,10 @@ export default function ManualEntry({ onSaved }: ManualEntryProps) {
 
   return (
     <div className="space-y-5">
-      <div className="space-y-2">
-        <Label htmlFor="manual-food-name">Meal or food</Label>
+      <div>
+        <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+          Meal or food
+        </h3>
         <Input
           id="manual-food-name"
           placeholder="e.g. Grilled chicken salad"
@@ -83,39 +91,19 @@ export default function ManualEntry({ onSaved }: ManualEntryProps) {
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="manual-meal-date">Log for</Label>
-        <Input
-          id="manual-meal-date"
-          type="date"
-          value={mealDate}
-          disabled={saving}
-          onChange={(e) => setMealDate(e.target.value)}
-        />
-        <p className="text-xs text-muted-foreground">
-          Saves to{" "}
-          <span className="text-foreground">
-            {formatMealDateLabel(mealDate)}
-          </span>
-        </p>
-      </div>
-
-      <section className="space-y-3">
+      <section className="space-y-2">
         <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
           Nutrition
         </h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {NUTRIENT_LABELS.map(({ key, label, unit }) => (
-            <div key={key} className="space-y-1.5">
+            <div key={key} className="space-y-1">
               <Label htmlFor={`manual-${key}`}>
                 {label} ({unit})
               </Label>
               <Input
                 id={`manual-${key}`}
-                type="number"
                 min={0}
-                step={key === "calories" ? 1 : 0.1}
-                inputMode="decimal"
                 value={nutrients[key] === 0 ? "" : nutrients[key]}
                 placeholder="0"
                 disabled={saving}
@@ -131,12 +119,20 @@ export default function ManualEntry({ onSaved }: ManualEntryProps) {
         </div>
       </section>
 
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
+      <div className="space-y-1">
+        <DatePicker
+          value={new Date(mealDate)}
+          onChange={(date) =>
+            setMealDate(date?.toISOString() ?? toLocalDateString())
+          }
+        />
+        <p className="text-xs text-muted-foreground">
+          Saves to{" "}
+          <span className="text-foreground">
+            {formatMealDateLabel(mealDate)}
+          </span>
         </p>
-      )}
-
+      </div>
       <Button
         type="button"
         disabled={saving}

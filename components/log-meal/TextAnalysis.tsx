@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Input } from "../ui/input"
-import { Button } from "../ui/button"
-import { Label } from "../ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
 import {
   type AnalyzeResult,
   formatMealDateLabel,
@@ -12,17 +12,44 @@ import {
 import { useSaveMeal } from "../hooks/useSaveMeal"
 import { NutrientsGrid } from "./NutrientsGrid"
 import { toast } from "sonner"
+import { DatePicker } from "@/components/ui/date-picker"
+import { IconInfoCircle } from "@tabler/icons-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 type TextAnalysisProps = {
   onSaved: (mealDate: string) => void
 }
 
+const sampleFood = {
+  foods: [
+    "2 bananas",
+    "2 tablespoons protein powder",
+    "1 cup oats",
+    "1 scoop peanut butter",
+    "350ml milk",
+  ],
+  nutrients: {
+    calories: 780,
+    protein: 45,
+    carbs: 90,
+    fat: 25,
+  },
+}
 export default function TextAnalysis({ onSaved }: TextAnalysisProps) {
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<AnalyzeResult | null>(null)
+  const [result, setResult] = useState<AnalyzeResult | null>(sampleFood)
   const [mealDate, setMealDate] = useState(() => toLocalDateString())
-  const { saveMeal, loading: saving, error: saveError, resetError } = useSaveMeal()
+  const {
+    saveMeal,
+    loading: saving,
+    error: saveError,
+    resetError,
+  } = useSaveMeal()
 
   async function handleAnalyze() {
     const trimmed = description.trim()
@@ -86,55 +113,41 @@ export default function TextAnalysis({ onSaved }: TextAnalysisProps) {
   if (result) {
     return (
       <div className="space-y-4">
-        <div className="space-y-1">
+        <div className="flex items-center gap-1">
           <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
             Estimated nutrition
           </p>
-          <p className="text-sm">
-            Log for{" "}
-            <span className="font-medium">
-              {formatMealDateLabel(mealDate)}
-            </span>
-          </p>
+
+          <Tooltip>
+            <TooltipTrigger>
+              <IconInfoCircle className="size-4" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">
+                All calories will estimated and not represent the exact values
+              </p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="text-meal-date">Log for</Label>
-          <Input
-            id="text-meal-date"
-            type="date"
-            value={mealDate}
-            disabled={saving}
-            onChange={(e) => setMealDate(e.target.value)}
+          {result.foods.length > 0 && (
+            <p className="text-sm capitalize">{result.foods.join(", ")}</p>
+          )}
+
+          <NutrientsGrid nutrients={result.nutrients} />
+        </div>
+
+        <div className="space-y-2">
+          <DatePicker
+            value={new Date(mealDate)}
+            onChange={(date) =>
+              setMealDate(date?.toISOString() ?? toLocalDateString())
+            }
           />
         </div>
 
-        {result.foods.length > 0 && (
-          <ul className="space-y-1.5">
-            {result.foods.map((food, index) => (
-              <li
-                key={`${food}-${index}`}
-                className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm"
-              >
-                {food}
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <NutrientsGrid nutrients={result.nutrients} />
-
-        {saveError && (
-          <p role="alert" className="text-sm text-destructive">
-            {saveError}
-          </p>
-        )}
-
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full"
-        >
+        <Button onClick={handleSave} disabled={saving} className="w-full">
           {saving ? "Saving…" : "Save meal"}
         </Button>
       </div>

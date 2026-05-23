@@ -5,6 +5,7 @@ import { AppHeader } from "@/components/layout/app-header"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 const dmSerifDisplay = DM_Serif_Display({
   subsets: ["latin"],
@@ -42,11 +43,13 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <ThemeProvider>
-          <AppHeader />
-          <Toaster />
-          {children}
-        </ThemeProvider>
+        <TooltipProvider>
+          <ThemeProvider>
+            <AppHeader />
+            <Toaster />
+            {children}
+          </ThemeProvider>
+        </TooltipProvider>
       </body>
     </html>
   )
