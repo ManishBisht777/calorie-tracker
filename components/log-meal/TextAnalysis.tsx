@@ -145,6 +145,12 @@ export default function TextAnalysis({ onSaved }: TextAnalysisProps) {
               setMealDate(date?.toISOString() ?? toLocalDateString())
             }
           />
+          <p className="text-xs text-muted-foreground">
+            Saves to{" "}
+            <span className="text-foreground">
+              {formatMealDateLabel(mealDate)}
+            </span>
+          </p>
         </div>
 
         <Button onClick={handleSave} disabled={saving} className="w-full">
