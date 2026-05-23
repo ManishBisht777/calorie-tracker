@@ -3,7 +3,9 @@
 import { DailyMealsList } from "@/components/daily-meals-list"
 import { DailySummary } from "@/components/daily-summary"
 import LogMeal from "@/components/log-meal/LogMeal"
+import { RecipeSelectDialog } from "@/components/recipes/recipe-select-dialog"
 import { ManualMealDialog } from "@/components/manual-meal-dialog"
+import { Button } from "@/components/ui/button"
 import { type MealEntry, toLocalDateString } from "@/lib/meal"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -14,6 +16,7 @@ export default function Page() {
   const [manualOpen, setManualOpen] = useState(false)
   const [dashboardDate, setDashboardDate] = useState(() => toLocalDateString())
   const [summaryRefreshKey, setSummaryRefreshKey] = useState(0)
+  const [recipeRefreshKey, setRecipeRefreshKey] = useState(0)
   const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null)
   const [editMealDate, setEditMealDate] = useState(() => toLocalDateString())
 
@@ -83,9 +86,18 @@ export default function Page() {
             setManualOpen(true)
           }}
           onMealsChanged={() => setSummaryRefreshKey((k) => k + 1)}
+          onRecipeSaved={() => setRecipeRefreshKey((k) => k + 1)}
         />
 
-        <LogMeal onMealSaved={handleMealSaved} />
+        <div className="grid grid-cols-2 gap-4">
+          <LogMeal onMealSaved={handleMealSaved} />
+          <RecipeSelectDialog
+            selectedDate={dashboardDate}
+            refreshKey={recipeRefreshKey}
+            onMealLogged={handleMealSaved}
+            trigger={<Button variant="secondary">Select a recipe</Button>}
+          />
+        </div>
       </div>
 
       <ManualMealDialog

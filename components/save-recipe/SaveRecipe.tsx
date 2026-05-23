@@ -17,9 +17,9 @@ import ManualEntry from "./ManualEntry"
 import { toast } from "sonner"
 import If from "../ui/If"
 
-type LogMode = "photo" | "text" | "manual"
+type SaveMode = "photo" | "text" | "manual"
 
-const LOG_MODES: { id: LogMode; label: string; description: string }[] = [
+const SAVE_MODES: { id: SaveMode; label: string; description: string }[] = [
   {
     id: "photo",
     label: "Photo",
@@ -37,44 +37,58 @@ const LOG_MODES: { id: LogMode; label: string; description: string }[] = [
   },
 ]
 
-type LogMealProps = {
-  onMealSaved?: (mealDate: string) => void
+type SaveRecipeProps = {
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  onRecipeSaved?: () => void
+  trigger?: React.ReactNode
 }
 
-export default function LogMeal({ onMealSaved }: LogMealProps) {
-  const [open, setOpen] = useState(false)
-  const [logMode, setLogMode] = useState<LogMode>("photo")
+export default function SaveRecipe({
+  open: controlledOpen,
+  onOpenChange,
+  onRecipeSaved,
+  trigger,
+}: SaveRecipeProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const [saveMode, setSaveMode] = useState<SaveMode>("photo")
   const [flowKey, setFlowKey] = useState(0)
 
-  function handleModeChange(mode: LogMode) {
-    setLogMode(mode)
+  const open = controlledOpen ?? internalOpen
+
+  function handleModeChange(mode: SaveMode) {
+    setSaveMode(mode)
     setFlowKey((k) => k + 1)
   }
 
-  function handleMealSaved(mealDate: string) {
-    toast.success("Meal saved")
-    onMealSaved?.(mealDate)
-    setOpen(false)
-    setFlowKey((k) => k + 1)
+  function handleRecipeSaved() {
+    toast.success("Recipe saved")
+    onRecipeSaved?.()
+    handleOpenChange(false)
   }
 
   function handleOpenChange(next: boolean) {
-    setOpen(next)
+    if (onOpenChange) {
+      onOpenChange(next)
+    } else {
+      setInternalOpen(next)
+    }
+
     if (!next) {
       setFlowKey((k) => k + 1)
-      setLogMode("photo")
+      setSaveMode("photo")
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button className="">Log new meal</Button>
-      </DialogTrigger>
+      {trigger ? (
+        <DialogTrigger asChild>{trigger}</DialogTrigger>
+      ) : null}
       <DialogContent className="min-w-xl">
         <DialogHeader>
           <DialogTitle className="font-mono font-semibold tracking-wide">
-            Log meal
+            Save recipe
           </DialogTitle>
           <DialogDescription>
             Photo, describe by name, or enter nutrition manually.
@@ -82,16 +96,16 @@ export default function LogMeal({ onMealSaved }: LogMealProps) {
         </DialogHeader>
 
         <div className="grid grid-cols-3 gap-2">
-          {LOG_MODES.map((mode) => (
+          {SAVE_MODES.map((mode) => (
             <button
               key={mode.id}
               type="button"
               role="tab"
-              aria-selected={logMode === mode.id}
+              aria-selected={saveMode === mode.id}
               onClick={() => handleModeChange(mode.id)}
               className={cn(
                 "border px-2 py-2.5 text-left transition-colors",
-                logMode === mode.id
+                saveMode === mode.id
                   ? "border-primary bg-primary/5"
                   : "border-border bg-card hover:bg-muted/50"
               )}
@@ -105,14 +119,14 @@ export default function LogMeal({ onMealSaved }: LogMealProps) {
         </div>
 
         <div>
-          <If condition={logMode === "photo"}>
-            <PhotoAnalysis key={flowKey} onSaved={handleMealSaved} />
+          <If condition={saveMode === "photo"}>
+            <PhotoAnalysis key={flowKey} onSaved={handleRecipeSaved} />
           </If>
-          <If condition={logMode === "text"}>
-            <TextAnalysis key={flowKey} onSaved={handleMealSaved} />
+          <If condition={saveMode === "text"}>
+            <TextAnalysis key={flowKey} onSaved={handleRecipeSaved} />
           </If>
-          <If condition={logMode === "manual"}>
-            <ManualEntry key={flowKey} onSaved={handleMealSaved} />
+          <If condition={saveMode === "manual"}>
+            <ManualEntry key={flowKey} onSaved={handleRecipeSaved} />
           </If>
         </div>
       </DialogContent>
