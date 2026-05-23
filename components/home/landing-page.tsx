@@ -406,7 +406,6 @@ export function LandingPage() {
             <Button variant="ghost" asChild size="lg">
               <Link href="/login">I already have an account</Link>
             </Button>
-            <InstallButton alwaysShow size="lg" variant="secondary" />
           </motion.div>
         </FadeIn>
       </div>
