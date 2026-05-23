@@ -12,6 +12,7 @@ import {
 import type {
   ActivityLevel,
   Gender,
+  GoalIntensity,
   GoalType,
   ProteinAdjustment,
 } from "@/lib/calorie-calculator"
@@ -29,6 +30,10 @@ export const userGoals = pgTable("user_goals", {
     .$type<ProteinAdjustment>()
     .notNull()
     .default("normal"),
+  goalIntensity: text("goal_intensity")
+    .$type<GoalIntensity>()
+    .notNull()
+    .default("moderate"),
   calories: real("calories").notNull(),
   protein: real("protein").notNull(),
   carbs: real("carbs").notNull(),

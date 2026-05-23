@@ -1,6 +1,7 @@
 export type Gender = "male" | "female"
 export type ActivityLevel = "low" | "middle" | "high" | "very_high"
 export type GoalType = "lose" | "lose_10" | "maintain" | "gain"
+export type GoalIntensity = "mild" | "moderate" | "aggressive"
 export type ProteinAdjustment = "low" | "normal" | "high"
 
 export type BodyParams = {
@@ -35,6 +36,24 @@ const PROTEIN_G_PER_KG: Record<ProteinAdjustment, number> = {
   high: 2.4,
 }
 
+const CALORIE_SURPLUS: Record<GoalIntensity, number> = {
+  mild: 200,
+  moderate: 300,
+  aggressive: 500,
+}
+
+const CALORIE_DEFICIT: Record<GoalIntensity, number> = {
+  mild: 250,
+  moderate: 500,
+  aggressive: 750,
+}
+
+const WEIGHT_LOSS_PERCENT: Record<GoalIntensity, number> = {
+  mild: 0.05,
+  moderate: 0.1,
+  aggressive: 0.15,
+}
+
 export const ACTIVITY_DESCRIPTIONS: Record<ActivityLevel, string> = {
   low: "Little or no exercise — desk job, minimal daily movement.",
   middle:
@@ -55,26 +74,46 @@ export function calculateTdee(params: BodyParams) {
   return bmr * ACTIVITY_MULTIPLIERS[params.activityLevel]
 }
 
-export function calculateTargetCalories(params: BodyParams) {
+export function calculateTargetCalories(
+  params: BodyParams,
+  goalIntensity: GoalIntensity = "moderate"
+) {
   const tdee = calculateTdee(params)
 
   switch (params.goalType) {
     case "lose":
-      return Math.max(1200, tdee - 500)
+      return Math.max(1200, tdee - CALORIE_DEFICIT[goalIntensity])
     case "lose_10":
-      return Math.max(1200, tdee * 0.9)
+      return Math.max(1200, tdee * (1 - WEIGHT_LOSS_PERCENT[goalIntensity]))
     case "maintain":
       return tdee
     case "gain":
-      return tdee + 300
+      return tdee + CALORIE_SURPLUS[goalIntensity]
+  }
+}
+
+export function getGoalAdjustmentLabel(
+  goalType: GoalType,
+  goalIntensity: GoalIntensity
+): string {
+  switch (goalType) {
+    case "lose":
+      return `Weight loss (-${CALORIE_DEFICIT[goalIntensity]} kcal)`
+    case "lose_10":
+      return `Weight loss (-${Math.round(WEIGHT_LOSS_PERCENT[goalIntensity] * 100)}%)`
+    case "maintain":
+      return "Maintenance"
+    case "gain":
+      return `Lean bulk (+${CALORIE_SURPLUS[goalIntensity]} kcal)`
   }
 }
 
 export function calculateMacros(
   params: BodyParams,
-  proteinAdjustment: ProteinAdjustment = "normal"
+  proteinAdjustment: ProteinAdjustment = "normal",
+  goalIntensity: GoalIntensity = "moderate"
 ): MacroResult {
-  const calories = Math.round(calculateTargetCalories(params))
+  const calories = Math.round(calculateTargetCalories(params, goalIntensity))
   const protein = Math.round(params.weightKg * PROTEIN_G_PER_KG[proteinAdjustment])
   const proteinCalories = protein * 4
 

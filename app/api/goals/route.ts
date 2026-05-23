@@ -5,12 +5,14 @@ import { getAuthUser, unauthorized } from "@/lib/auth"
 import {
   calculateMacros,
   isValidBodyParams,
+  type GoalIntensity,
   type ProteinAdjustment,
 } from "@/lib/calorie-calculator"
 import { db, userGoals } from "@/lib/db"
 import type { Nutrients } from "@/lib/meal"
 
 const PROTEIN_ADJUSTMENTS: ProteinAdjustment[] = ["low", "normal", "high"]
+const GOAL_INTENSITIES: GoalIntensity[] = ["mild", "moderate", "aggressive"]
 
 function toNutrients(row: {
   calories: number
@@ -30,7 +32,8 @@ function parseSaveBody(body: unknown) {
   if (!body || typeof body !== "object") return null
 
   const v = body as Record<string, unknown>
-  const { proteinAdjustment: rawAdjustment, ...rest } = v
+  const { proteinAdjustment: rawAdjustment, goalIntensity: rawIntensity, ...rest } =
+    v
 
   if (!isValidBodyParams(rest)) return null
 
@@ -42,12 +45,22 @@ function parseSaveBody(body: unknown) {
     return null
   }
 
+  if (
+    rawIntensity !== undefined &&
+    (typeof rawIntensity !== "string" ||
+      !GOAL_INTENSITIES.includes(rawIntensity as GoalIntensity))
+  ) {
+    return null
+  }
+
   const adjustment = (rawAdjustment as ProteinAdjustment | undefined) ?? "normal"
-  const macros = calculateMacros(rest, adjustment)
+  const intensity = (rawIntensity as GoalIntensity | undefined) ?? "moderate"
+  const macros = calculateMacros(rest, adjustment, intensity)
 
   return {
     body: rest,
     proteinAdjustment: adjustment,
+    goalIntensity: intensity,
     macros,
   }
 }
@@ -77,6 +90,7 @@ export async function GET() {
         activityLevel: goal.activityLevel,
         goalType: goal.goalType,
         proteinAdjustment: goal.proteinAdjustment,
+        goalIntensity: goal.goalIntensity,
         nutrients: toNutrients(goal),
         updatedAt: goal.updatedAt,
       },
@@ -113,6 +127,7 @@ export async function POST(req: NextRequest) {
       activityLevel: parsed.body.activityLevel,
       goalType: parsed.body.goalType,
       proteinAdjustment: parsed.proteinAdjustment,
+      goalIntensity: parsed.goalIntensity,
       calories: parsed.macros.calories,
       protein: parsed.macros.protein,
       carbs: parsed.macros.carbs,
