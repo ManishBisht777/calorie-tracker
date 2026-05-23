@@ -1,15 +1,12 @@
 "use client"
 
 import { IconPencil, IconTrash } from "@tabler/icons-react"
-import { useCallback, useEffect, useState } from "react"
+import { useState } from "react"
 
+import { useDeleteMeal } from "@/components/hooks/useDeleteMeal"
+import { useMeals } from "@/components/hooks/useMeals"
 import { Button } from "@/components/ui/button"
-import {
-  formatFoodsLabel,
-  formatMealDateLabel,
-  NUTRIENT_LABELS,
-  type MealEntry,
-} from "@/lib/meal"
+import { formatFoodsLabel, NUTRIENT_LABELS, type MealEntry } from "@/lib/meal"
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "./ui/scroll-area"
 
@@ -19,13 +16,6 @@ type DailyMealsListProps = {
   onEdit: (meal: MealEntry) => void
   onMealsChanged?: () => void
   className?: string
-}
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  })
 }
 
 function MealCard({
@@ -38,28 +28,14 @@ function MealCard({
   onDeleted: () => void
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { deleteMeal, loading: deleting, error } = useDeleteMeal()
 
   async function handleDelete() {
-    setDeleting(true)
-    setError(null)
+    const deleted = await deleteMeal(meal.id)
+    setConfirmDelete(false)
 
-    try {
-      const res = await fetch(`/api/meals/${meal.id}`, { method: "DELETE" })
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error ?? "Failed to delete meal")
-        return
-      }
-
+    if (deleted) {
       onDeleted()
-    } catch {
-      setError("Something went wrong. Please try again.")
-    } finally {
-      setDeleting(false)
-      setConfirmDelete(false)
     }
   }
 
@@ -70,9 +46,6 @@ function MealCard({
           <p className="leading-snug font-medium">
             {formatFoodsLabel(meal.foods)}
           </p>
-          {/* <p className="text-xs text-muted-foreground">
-            {formatTime(meal.createdAt)}
-          </p> */}
         </div>
         <div className="flex shrink-0 gap-1">
           <Button
@@ -154,34 +127,10 @@ export function DailyMealsList({
   onMealsChanged,
   className,
 }: DailyMealsListProps) {
-  const [meals, setMeals] = useState<MealEntry[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const loadMeals = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const res = await fetch(`/api/meals?date=${selectedDate}`)
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error ?? "Failed to load meals")
-        return
-      }
-
-      setMeals(data.meals ?? [])
-    } catch {
-      setError("Could not load meals for this day.")
-    } finally {
-      setLoading(false)
-    }
-  }, [selectedDate])
-
-  useEffect(() => {
-    void loadMeals()
-  }, [loadMeals, refreshKey])
+  const { meals, loading, error, loadMeals } = useMeals({
+    date: selectedDate,
+    refreshKey,
+  })
 
   function handleDeleted() {
     void loadMeals()
@@ -194,9 +143,6 @@ export function DailyMealsList({
         <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
           Meals
         </h2>
-        <p className="text-xs text-muted-foreground">
-          {formatMealDateLabel(selectedDate)}
-        </p>
       </header>
 
       <div
@@ -207,7 +153,7 @@ export function DailyMealsList({
         aria-busy={loading}
       >
         {!loading && meals.length === 0 && !error && (
-          <p className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
+          <p className="border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
             No meals logged for this day yet.
           </p>
         )}
