@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { motion, useReducedMotion } from "motion/react"
 
-import { InstallButton } from "@/components/pwa/install-button"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -11,7 +10,7 @@ const EASE_OUT = [0.23, 1, 0.32, 1] as const
 
 const STATS = [
   { value: "< 30 seconds", label: "Average time to log a meal" },
-  { value: "3 ways", label: "Add food to your day" },
+  { value: "1 tap", label: "Log a saved recipe to your day" },
   { value: "7-day view", label: "Track your progress across the week" },
 ] as const
 
@@ -22,6 +21,13 @@ const BENTO_ITEMS = [
       'Describe your meal naturally—"two eggs, toast, black coffee"—and get an instant calorie estimate.',
     className: "col-span-2 row-span-2 min-h-44",
     accent: "bg-gray-50",
+  },
+  {
+    title: "Saved recipes",
+    description:
+      "Save meals you eat often—by photo, text, or manual entry—then log them again with one tap.",
+    className: "col-span-2 row-span-1 min-h-24",
+    accent: "bg-primary/5",
   },
   {
     title: "Calorie ring",
@@ -35,18 +41,18 @@ const BENTO_ITEMS = [
     className: "col-span-1 row-span-1",
     accent: "bg-gray-50",
   },
-  {
-    title: "Edit anytime",
-    description: "Update portions or values with a tap.",
-    className: "col-span-1 row-span-1",
-    accent: "bg-gray-50",
-  },
-  {
-    title: "Flexible dates",
-    description: "Log past meals or plan ahead with ease.",
-    className: "col-span-1 row-span-1",
-    accent: "bg-gray-50",
-  },
+  // {
+  //   title: "Edit anytime",
+  //   description: "Update portions or values with a tap.",
+  //   className: "col-span-1 row-span-1",
+  //   accent: "bg-gray-50",
+  // },
+  // {
+  //   title: "Flexible dates",
+  //   description: "Log past meals or plan ahead with ease.",
+  //   className: "col-span-1 row-span-1",
+  //   accent: "bg-gray-50",
+  // },
 ] as const
 
 const STEPS = [
@@ -60,7 +66,7 @@ const STEPS = [
     step: "02",
     title: "Log your meals",
     description:
-      "Track breakfast, lunch, dinner, and snacks throughout the day.",
+      "Track meals as you go—or save recipes for dishes you repeat and add them in one tap.",
   },
   {
     step: "03",
@@ -79,7 +85,11 @@ const MACROS = [
 const FAQ = [
   {
     q: "Do I need to weigh every ingredient?",
-    a: "No. Use text logging for quick estimates, or switch to manual entry for precision.",
+    a: "No. Use text logging for quick estimates, switch to manual entry for precision, or save a recipe once and reuse it.",
+  },
+  {
+    q: "How do recipes work?",
+    a: "Create a recipe from a photo, description, or manual entry. Search your saved recipes anytime and log one to your day instantly.",
   },
   {
     q: "Can I log meals from previous days?",
@@ -146,8 +156,8 @@ export function LandingPage() {
             Know what you eat. Reach your goals.
           </h1>
           <p className="mx-auto text-sm leading-relaxed text-muted-foreground md:text-base">
-            A simple, intuitive way to log meals, track calories, and stay
-            consistent—without spreadsheets or guesswork.
+            A simple, intuitive way to log meals, save recipes, track calories,
+            and stay consistent—without spreadsheets or guesswork.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Button asChild>
@@ -156,7 +166,7 @@ export function LandingPage() {
             <Button variant="outline" asChild>
               <Link href="/login">Log in</Link>
             </Button>
-            <InstallButton />
+            {/* <InstallButton /> */}
           </div>
         </FadeIn>
 
@@ -188,8 +198,8 @@ export function LandingPage() {
           <FadeIn delay={0.08} className="space-y-2">
             <SectionLabel>Everything in one place</SectionLabel>
             <p className="mx-auto max-w-lg text-sm text-muted-foreground">
-              Designed around a focused daily view—log quickly, review
-              effortlessly, and adjust when needed.
+              Designed around a focused daily view—log quickly, reuse saved
+              recipes, review effortlessly, and adjust when needed.
             </p>
           </FadeIn>
           <div className="grid grid-cols-2 gap-3 text-left md:grid-cols-4">
@@ -298,7 +308,7 @@ export function LandingPage() {
             <SectionLabel>Built for daily use</SectionLabel>
             <p className="mt-4 text-sm font-semibold">No clutter</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Open the app, log your meal, and move on.
+              Open the app, log your meal—or tap a saved recipe—and move on.
             </p>
           </FadeIn>
           <FadeIn
