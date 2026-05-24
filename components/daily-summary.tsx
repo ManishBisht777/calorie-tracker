@@ -13,6 +13,7 @@ import {
 } from "@/lib/meal"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type DailySummaryProps = {
   selectedDate: string
@@ -208,6 +209,35 @@ function CalendarStrip({
   )
 }
 
+function DailySummarySkeleton() {
+  return (
+    <div className="flex flex-col gap-6" aria-hidden>
+      <div className="flex items-center justify-between gap-3">
+        <Skeleton className="size-[140px] shrink-0 rounded-full" />
+        <div className="flex flex-1 justify-around gap-2">
+          {Array.from({ length: 2 }).map((_, index) => (
+            <div key={index} className="flex flex-1 flex-col items-center gap-2">
+              <Skeleton className="size-11 rounded-full" />
+              <Skeleton className="h-5 w-16" />
+              <Skeleton className="h-3 w-10" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex gap-4 border-border pt-5">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="flex flex-1 flex-col gap-2">
+            <Skeleton className="h-4 w-12" />
+            <Skeleton className="h-2 w-full" />
+            <Skeleton className="h-4 w-16" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function DailySummary({
   selectedDate,
   onDateChange,
@@ -287,61 +317,59 @@ export function DailySummary({
         />
       </div>
 
-      <div className="">
-        <div
-          className={cn(
-            "flex flex-col gap-6 transition-opacity duration-200",
-            loading && "opacity-60"
-          )}
-          aria-busy={loading}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <CalorieRing
-              remaining={remaining}
-              goal={goals.calories}
-              eaten={eaten}
-            />
-            <div className="flex flex-1 justify-around gap-2">
-              <StatColumn
-                icon={<IconToolsKitchen2 className="size-5" stroke={1.75} />}
-                iconClassName="text-primary"
-                iconBgClassName="bg-primary/10"
-                value={eaten}
-                unit="cal"
-                label="Eaten"
+      <div aria-busy={loading}>
+        {loading ? (
+          <DailySummarySkeleton />
+        ) : (
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-between gap-3">
+              <CalorieRing
+                remaining={remaining}
+                goal={goals.calories}
+                eaten={eaten}
               />
-              <StatColumn
-                icon={<IconFlame className="size-5" stroke={1.75} />}
-                iconClassName="text-destructive"
-                iconBgClassName="bg-destructive/10"
-                value={burned}
-                unit="cal"
-                label="Burned"
+              <div className="flex flex-1 justify-around gap-2">
+                <StatColumn
+                  icon={<IconToolsKitchen2 className="size-5" stroke={1.75} />}
+                  iconClassName="text-primary"
+                  iconBgClassName="bg-primary/10"
+                  value={eaten}
+                  unit="cal"
+                  label="Eaten"
+                />
+                <StatColumn
+                  icon={<IconFlame className="size-5" stroke={1.75} />}
+                  iconClassName="text-destructive"
+                  iconBgClassName="bg-destructive/10"
+                  value={burned}
+                  unit="cal"
+                  label="Burned"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-4 border-border pt-5">
+              <MacroBar
+                label="Carbs"
+                current={totals?.carbs ?? 0}
+                goal={goals.carbs}
+                fillClassName="bg-chart-2"
+              />
+              <MacroBar
+                label="Protein"
+                current={totals?.protein ?? 0}
+                goal={goals.protein}
+                fillClassName="bg-chart-4"
+              />
+              <MacroBar
+                label="Fat"
+                current={totals?.fat ?? 0}
+                goal={goals.fat}
+                fillClassName="bg-foreground"
               />
             </div>
           </div>
-
-          <div className="flex gap-4 border-border pt-5">
-            <MacroBar
-              label="Carbs"
-              current={totals?.carbs ?? 0}
-              goal={goals.carbs}
-              fillClassName="bg-chart-2"
-            />
-            <MacroBar
-              label="Protein"
-              current={totals?.protein ?? 0}
-              goal={goals.protein}
-              fillClassName="bg-chart-4"
-            />
-            <MacroBar
-              label="Fat"
-              current={totals?.fat ?? 0}
-              goal={goals.fat}
-              fillClassName="bg-foreground"
-            />
-          </div>
-        </div>
+        )}
       </div>
     </section>
   )

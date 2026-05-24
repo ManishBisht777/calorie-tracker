@@ -7,9 +7,9 @@ import { useDeleteMeal } from "@/components/hooks/useDeleteMeal"
 import { useMeals } from "@/components/hooks/useMeals"
 import SaveRecipe from "@/components/save-recipe/SaveRecipe"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { formatFoodsLabel, NUTRIENT_LABELS, type MealEntry } from "@/lib/meal"
 import { cn } from "@/lib/utils"
-import { ScrollArea } from "./ui/scroll-area"
 
 type DailyMealsListProps = {
   selectedDate: string
@@ -122,6 +122,44 @@ function MealCard({
   )
 }
 
+function MealCardSkeleton() {
+  return (
+    <div className="border border-border bg-card p-4" aria-hidden>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 space-y-2">
+          <Skeleton className="h-4 w-4/5" />
+          <Skeleton className="h-4 w-3/5" />
+        </div>
+        <div className="flex shrink-0 gap-1">
+          <Skeleton className="size-8" />
+          <Skeleton className="size-8" />
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-4 gap-2">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={index} className="h-12" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function MealsListSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <div
+      className="space-y-3"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading meals"
+    >
+      {Array.from({ length: count }).map((_, index) => (
+        <MealCardSkeleton key={index} />
+      ))}
+    </div>
+  )
+}
+
 export function DailyMealsList({
   selectedDate,
   refreshKey = 0,
@@ -163,20 +201,14 @@ export function DailyMealsList({
         />
       </div>
 
-      <div
-        className={cn(
-          "transition-opacity duration-200",
-          loading && "opacity-60"
-        )}
-        aria-busy={loading}
-      >
-        {!loading && meals.length === 0 && !error && (
+      <div aria-busy={loading}>
+        {loading ? (
+          <MealsListSkeleton />
+        ) : meals.length === 0 && !error ? (
           <p className="border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
             No meals logged for this day yet.
           </p>
-        )}
-        {!loading && meals.length > 0 && (
-          // <ScrollArea className="h-[350px]">
+        ) : (
           <div className="space-y-3">
             {meals.map((meal) => (
               <MealCard
@@ -187,7 +219,6 @@ export function DailyMealsList({
               />
             ))}
           </div>
-          // </ScrollArea>
         )}
       </div>
     </section>
