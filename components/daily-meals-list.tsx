@@ -5,6 +5,7 @@ import { useState } from "react"
 
 import { useDeleteMeal } from "@/components/hooks/useDeleteMeal"
 import { useMeals } from "@/components/hooks/useMeals"
+import SaveRecipe from "@/components/save-recipe/SaveRecipe"
 import { Button } from "@/components/ui/button"
 import { formatFoodsLabel, NUTRIENT_LABELS, type MealEntry } from "@/lib/meal"
 import { cn } from "@/lib/utils"
@@ -15,6 +16,7 @@ type DailyMealsListProps = {
   refreshKey?: number
   onEdit: (meal: MealEntry) => void
   onMealsChanged?: () => void
+  onRecipeSaved?: () => void
   className?: string
 }
 
@@ -125,25 +127,41 @@ export function DailyMealsList({
   refreshKey = 0,
   onEdit,
   onMealsChanged,
+  onRecipeSaved,
   className,
 }: DailyMealsListProps) {
   const { meals, loading, error, loadMeals } = useMeals({
     date: selectedDate,
     refreshKey,
   })
+  const [recipeDialogOpen, setRecipeDialogOpen] = useState(false)
 
   function handleDeleted() {
     void loadMeals()
     onMealsChanged?.()
   }
 
+  function handleRecipeSaved() {
+    onRecipeSaved?.()
+  }
+
   return (
     <section className={cn("space-y-3", className)}>
-      <header className="space-y-0.5">
+      <div className="flex items-center justify-between">
         <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
           Meals
         </h2>
-      </header>
+        <SaveRecipe
+          open={recipeDialogOpen}
+          onOpenChange={setRecipeDialogOpen}
+          onRecipeSaved={handleRecipeSaved}
+          trigger={
+            <Button size="sm" variant="outline">
+              Create Recipe
+            </Button>
+          }
+        />
+      </div>
 
       <div
         className={cn(
@@ -159,7 +177,7 @@ export function DailyMealsList({
         )}
 
         {meals.length > 0 && (
-          <ScrollArea className="h-[350px] pr-3">
+          <ScrollArea className="h-[350px]">
             <div className="space-y-3">
               {meals.map((meal) => (
                 <MealCard

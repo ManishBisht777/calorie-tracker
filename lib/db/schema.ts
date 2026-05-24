@@ -46,6 +46,23 @@ export const userGoals = pgTable("user_goals", {
     .notNull(),
 })
 
+export const recipes = pgTable("recipes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id"),
+  name: text("name").notNull(),
+  foods: jsonb("foods").$type<string[]>().notNull(),
+  calories: real("calories").notNull(),
+  protein: real("protein").notNull(),
+  carbs: real("carbs").notNull(),
+  fat: real("fat").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+})
+
 export const mealEntries = pgTable("meal_entries", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id"),

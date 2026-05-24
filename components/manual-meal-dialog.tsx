@@ -27,7 +27,10 @@ type ManualMealDialogProps = {
   mealDate: string
   onMealDateChange: (date: string) => void
   editMeal?: MealEntry | null
-  onSaved: (mealDate: string, data: { foods: string[]; nutrients: Nutrients }) => void
+  onSaved: (
+    mealDate: string,
+    data: { foods: string[]; nutrients: Nutrients }
+  ) => void
   onUpdated?: (mealDate: string) => void
 }
 
@@ -125,7 +128,10 @@ export function ManualMealDialog({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error ?? (isEditing ? "Failed to update meal" : "Failed to save meal"))
+        setError(
+          data.error ??
+            (isEditing ? "Failed to update meal" : "Failed to save meal")
+        )
         return
       }
 
@@ -152,13 +158,13 @@ export function ManualMealDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[min(90vh,40rem)] gap-0 overflow-y-auto p-0 sm:max-w-md">
         <DialogHeader className="border-b border-border px-6 py-5">
-          <DialogTitle>{isEditing ? "Edit meal" : "Log meal manually"}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-mono font-semibold tracking-wide">
+            {isEditing ? "Edit meal" : "Log meal manually"}
+          </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
             {isEditing
               ? "Update this meal's name, date, and nutrition."
-              : "Enter nutrition details yourself — no AI estimate."}{" "}
-            Saves to{" "}
-            <span className="text-foreground">{formatMealDateLabel(mealDate)}</span>.
+              : "Enter nutrition details yourself — no AI estimate."}
           </DialogDescription>
         </DialogHeader>
 
@@ -207,7 +213,8 @@ export function ManualMealDialog({
                     onChange={(e) =>
                       setNutrients((prev) => ({
                         ...prev,
-                        [key]: e.target.value === "" ? 0 : Number(e.target.value),
+                        [key]:
+                          e.target.value === "" ? 0 : Number(e.target.value),
                       }))
                     }
                   />
@@ -215,12 +222,6 @@ export function ManualMealDialog({
               ))}
             </div>
           </section>
-
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
         </div>
 
         <DialogFooter className="border-t border-border px-6 py-4">
@@ -233,7 +234,13 @@ export function ManualMealDialog({
             Cancel
           </Button>
           <Button type="button" disabled={saving} onClick={handleSave}>
-            {saving ? (isEditing ? "Saving…" : "Saving…") : isEditing ? "Save changes" : "Save meal"}
+            {saving
+              ? isEditing
+                ? "Saving…"
+                : "Saving…"
+              : isEditing
+                ? "Save changes"
+                : "Save meal"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -12,6 +12,7 @@ import {
   type DayTotals,
 } from "@/lib/meal"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 type DailySummaryProps = {
   selectedDate: string
@@ -168,45 +169,41 @@ function CalendarStrip({
   caloriesByDate: Record<string, DayTotals>
 }) {
   return (
-    <div className="-mx-1 scrollbar-none overflow-x-auto px-1 pb-1 [&::-webkit-scrollbar]:hidden">
-      <div className="flex min-w-max gap-3">
-        {weekDates.map((date) => {
-          const selected = date === selectedDate
-          const today = isToday(date)
-          const { month, day } = formatCalendarMonthDay(date)
-          const hasMeals = (caloriesByDate[date]?.calories ?? 0) > 0
+    <div className="flex gap-3">
+      {weekDates.map((date) => {
+        const selected = date === selectedDate
+        const today = isToday(date)
+        const { month, day } = formatCalendarMonthDay(date)
+        const hasMeals = (caloriesByDate[date]?.calories ?? 0) > 0
 
-          return (
-            <button
-              key={date}
-              type="button"
-              onClick={() => onSelect(date)}
-              className={cn(
-                "flex min-w-13 flex-col items-center justify-center gap-0.5 px-3 text-center transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
-                "active:scale-[0.97] motion-reduce:active:scale-100",
-                selected && today && "min-h-18 py-3",
-                selected && !today && "py-2.5",
-                !selected && "py-2.5",
-                selected
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-              )}
-              aria-pressed={selected}
-              aria-label={`${formatCalendarDay(date)} ${month} ${day}${today ? ", today" : ""}`}
-            >
-              <span className="text-[11px] leading-none font-medium">
-                {formatCalendarDay(date)}
-              </span>
-              <span className="text-lg leading-none font-semibold tabular-nums">
-                {day}
-              </span>
-              {hasMeals && !selected && (
-                <span className="mt-0.5 size-1 rounded-full bg-primary/70" />
-              )}
-            </button>
-          )
-        })}
-      </div>
+        return (
+          <button
+            key={date}
+            type="button"
+            onClick={() => onSelect(date)}
+            className={cn(
+              "col-span-1 flex flex-1 flex-col items-center justify-center gap-0.5 px-3 text-center transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
+              "active:scale-[0.97] motion-reduce:active:scale-100",
+              selected && today && "min-h-18 py-3",
+              selected && !today && "py-2.5",
+              !selected && "py-2.5",
+              selected
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+            )}
+          >
+            <span className="text-[11px] leading-none font-medium">
+              {formatCalendarDay(date)}
+            </span>
+            <span className="text-lg leading-none font-semibold tabular-nums">
+              {day}
+            </span>
+            {hasMeals && !selected && (
+              <span className="mt-0.5 size-1 rounded-full bg-primary/70" />
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -274,9 +271,14 @@ export function DailySummary({
   return (
     <section className={cn("space-y-5", className)}>
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-wide">
-          Calorie Tracker
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold tracking-wide">
+            Calorie Tracker
+          </h1>
+          <Link href="/dashboard" className="text-sm text-muted-foreground">
+            View all
+          </Link>
+        </div>
         <CalendarStrip
           weekDates={weekDates}
           selectedDate={selectedDate}
