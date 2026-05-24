@@ -174,19 +174,20 @@ export function DailyMealsList({
           <p className="border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
             No meals logged for this day yet.
           </p>
-        ) : (
-          <ScrollArea className="h-[350px] pr-3">
-            <div className="space-y-3">
-              {meals.map((meal) => (
-                <MealCard
-                  key={meal.id}
-                  meal={meal}
-                  onEdit={onEdit}
-                  onDeleted={handleDeleted}
-                />
-              ))}
-            </div>
-          </ScrollArea>
+        )}
+        {!loading && meals.length > 0 && (
+          // <ScrollArea className="h-[350px]">
+          <div className="space-y-3">
+            {meals.map((meal) => (
+              <MealCard
+                key={meal.id}
+                meal={meal}
+                onEdit={onEdit}
+                onDeleted={handleDeleted}
+              />
+            ))}
+          </div>
+          // </ScrollArea>
         )}
       </div>
     </section>
